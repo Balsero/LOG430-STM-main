@@ -35,12 +35,13 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.OpenApi.Models;
+using System;
 
 namespace Configuration;
 
 public class Program
 {
-    public static readonly bool UseInMemoryDatabase = true;
+    public static readonly bool UseInMemoryDatabase = false;
 
     private static readonly InMemoryDatabaseRoot DatabaseRoot = new();
 
@@ -53,12 +54,12 @@ public class Program
     public static Action<IServiceCollection> Domain { get; set; } = DomainSetup;
 
     // this is a quick start configuration
-    // set values using environment variables instead
-    private const string DbServerAddress = "";
-    private const int DbPort = 00000;
-    private const string DbUsername = "";
-    private const string DbPassword = "";
-    private const string DatabaseName = "";
+    // set values using environment variinlazs instead
+    private readonly string DbServerAddress = "";
+    private readonly int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT"));
+    private readonly string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER");
+    private readonly string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+    private readonly string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB");
 
     public static void Main(string[] args)
     {

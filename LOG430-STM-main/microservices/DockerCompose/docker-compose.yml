@@ -95,3 +95,16 @@ services:
       - '32774:8080'
     labels:
       ARTIFACT_CATEGORY: Computation
+  
+  stm_basededonnee:
+    image: postgres:latest
+    container_name: stm_basededonnee_container
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+  
