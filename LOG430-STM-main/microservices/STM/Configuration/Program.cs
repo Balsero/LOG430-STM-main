@@ -36,7 +36,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.OpenApi.Models;
 using System;
-using DotNetEnv;
+
 
 namespace Configuration;
 
@@ -61,44 +61,6 @@ public class Program
     public static void Main(string[] args)
     {
 
-
-        string envFilePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "DockerCompose", ".env");
-
-        // Verificar si el archivo .env existe antes de cargarlo
-        if (File.Exists(envFilePath))
-        {
-            Console.WriteLine("El archivo .env existe en la ruta especificada: " + envFilePath);
-
-            try
-            {
-                // Intentar cargar el archivo .env
-                DotNetEnv.Env.Load(envFilePath);
-                Console.WriteLine("El archivo .env fue cargado exitosamente.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error al cargar el archivo .env: " + ex.Message);
-            }
-        }
-        else
-        {
-            Console.WriteLine("El archivo .env no se encuentra en la ruta especificada: " + envFilePath);
-        }
-
-
-
-        string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE") ?? DefaultDbServerAddress;
-        int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT") ?? DefaultDbPort.ToString());
-        string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? DefaultDbUsername;
-        string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? DefaultDbPassword;
-        string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? DefaultDatabaseName;
-        
-
-        Console.WriteLine($"Server={DbServerAddress};Port={DbPort};Username={DbUsername};Password={DbPassword};Database={DatabaseName};");
-
-
-
-
         var hostInfo = new HostInfo();
 
     string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE") ;
@@ -107,7 +69,9 @@ public class Program
     string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
     string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB");
 
-    hostInfo.Validate();
+    Console.WriteLine($"Server={DbServerAddress};Port={DbPort};Username={DbUsername};Password={DbPassword};Database={DatabaseName};");
+
+        hostInfo.Validate();
 
 
         hostInfo.Validate();
