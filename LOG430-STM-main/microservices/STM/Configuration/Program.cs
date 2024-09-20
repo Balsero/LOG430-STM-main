@@ -36,6 +36,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.OpenApi.Models;
 using System;
+using DotNetEnv;
 
 namespace Configuration;
 
@@ -55,19 +56,90 @@ public class Program
 
     // this is a quick start configuration
     // set values using environment variinlazs instead
-    private readonly string DbServerAddress = "";
-    private readonly int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT"));
-    private readonly string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER");
-    private readonly string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-    private readonly string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB");
+    /*
+    private const string DefaultDbServerAddress = "stm_basededonnee_container";
+    private const int DefaultDbPort = 5432;
+    private const string DefaultDbUsername = "admin";
+    private const string DefaultDbPassword = "Stm12345";
+    private const string DefaultDatabaseName = "StmBaseDeDonnee";
+    */
+
+    private const string DefaultDbServerAddress = "";
+    private const int DefaultDbPort = 0000;
+    private const string DefaultDbUsername = "";
+    private const string DefaultDbPassword = "";
+    private const string DefaultDatabaseName = "";
+
+
+
+    /*
+    private const string DbServerAddress = "stm_basededonnee_container";
+    private const int DbPort = 5432;
+    private const string DbUsername = "admin";
+    private const string DbPassword = "Stm12345";
+    private const string DatabaseName = "StmBaseDeDonnee";
+    */
+
+    /*
+    private static string DbServerAddress;
+    private static int DbPort;
+    private static string DbUsername;
+    private static string DbPassword;
+    private static string DatabaseName;
+    */
 
     public static void Main(string[] args)
     {
+
+
+        string envFilePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "DockerCompose", ".env");
+
+        // Verificar si el archivo .env existe antes de cargarlo
+        if (File.Exists(envFilePath))
+        {
+            Console.WriteLine("El archivo .env existe en la ruta especificada: " + envFilePath);
+
+            try
+            {
+                // Intentar cargar el archivo .env
+                DotNetEnv.Env.Load(envFilePath);
+                Console.WriteLine("El archivo .env fue cargado exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al cargar el archivo .env: " + ex.Message);
+            }
+        }
+        else
+        {
+            Console.WriteLine("El archivo .env no se encuentra en la ruta especificada: " + envFilePath);
+        }
+
+
+
+        string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE") ?? DefaultDbServerAddress;
+        int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT") ?? DefaultDbPort.ToString());
+        string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? DefaultDbUsername;
+        string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? DefaultDbPassword;
+        string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? DefaultDatabaseName;
+        
+
+        Console.WriteLine($"Server={DbServerAddress};Port={DbPort};Username={DbUsername};Password={DbPassword};Database={DatabaseName};");
+
+
+
+
         var hostInfo = new HostInfo();
 
-        hostInfo.Validate();
 
+
+        hostInfo.Validate();
+        
         var builder = WebApplication.CreateBuilder(args);
+        //delete
+        builder.Logging.AddConsole();
+
+
 
         RepositoryDbContextOptionConfiguration = UseInMemoryDatabase
             ? (options) => { options.UseInMemoryDatabase("InMemory", DatabaseRoot); }
