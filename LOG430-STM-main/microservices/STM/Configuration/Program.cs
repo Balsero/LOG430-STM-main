@@ -55,17 +55,19 @@ public class Program
 
     // this is a quick start configuration
     // set values using environment variinlazs instead
-    private readonly string DbServerAddress = "";
-    private readonly int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT"));
-    private readonly string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER");
-    private readonly string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-    private readonly string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB");
+    
 
     public static void Main(string[] args)
     {
         var hostInfo = new HostInfo();
 
-        hostInfo.Validate();
+    string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE") ;
+    int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT"));
+    string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER");
+    string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+    string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB");
+
+    hostInfo.Validate();
 
         var builder = WebApplication.CreateBuilder(args);
 
