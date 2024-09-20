@@ -56,37 +56,7 @@ public class Program
 
     // this is a quick start configuration
     // set values using environment variinlazs instead
-    /*
-    private const string DefaultDbServerAddress = "stm_basededonnee_container";
-    private const int DefaultDbPort = 5432;
-    private const string DefaultDbUsername = "admin";
-    private const string DefaultDbPassword = "Stm12345";
-    private const string DefaultDatabaseName = "StmBaseDeDonnee";
-    */
-
-    private const string DefaultDbServerAddress = "";
-    private const int DefaultDbPort = 0000;
-    private const string DefaultDbUsername = "";
-    private const string DefaultDbPassword = "";
-    private const string DefaultDatabaseName = "";
-
-
-
-    /*
-    private const string DbServerAddress = "stm_basededonnee_container";
-    private const int DbPort = 5432;
-    private const string DbUsername = "admin";
-    private const string DbPassword = "Stm12345";
-    private const string DatabaseName = "StmBaseDeDonnee";
-    */
-
-    /*
-    private static string DbServerAddress;
-    private static int DbPort;
-    private static string DbUsername;
-    private static string DbPassword;
-    private static string DatabaseName;
-    */
+    
 
     public static void Main(string[] args)
     {
@@ -131,6 +101,13 @@ public class Program
 
         var hostInfo = new HostInfo();
 
+    string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE") ;
+    int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT"));
+    string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER");
+    string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+    string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB");
+
+    hostInfo.Validate();
 
 
         hostInfo.Validate();
