@@ -56,18 +56,23 @@ public class Program
 
     // this is a quick start configuration
     // set values using environment variinlazs instead
-    
+    private const string DefaultServerAdresse = "";
+    private const int DefaultPort = 0000;
+    private const string DefaultUsername = "";
+    private const string DefaultPassword = "";
+    private const string DefaultDatabaseName = "";
+
 
     public static void Main(string[] args)
     {
 
         var hostInfo = new HostInfo();
 
-    string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE") ;
+    string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE")?? DefaultServerAdresse ;
     int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT"));
-    string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER");
-    string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
-    string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB");
+    string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER")?? DefaultUsername;
+    string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? DefaultPassword;
+    string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? DefaultDatabaseName;
 
     Console.WriteLine($"Server={DbServerAddress};Port={DbPort};Username={DbUsername};Password={DbPassword};Database={DatabaseName};");
 
