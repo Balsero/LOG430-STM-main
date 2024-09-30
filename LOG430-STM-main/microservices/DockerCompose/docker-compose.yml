@@ -59,6 +59,7 @@ services:
       - '32772:8080'
     labels:
       ARTIFACT_CATEGORY: Computation
+      Replicas: RouteTimeProvider,RouteTimeProvider2,RouteTimeProvider3
 
   tripcomparator:
     container_name: TripComparator
@@ -109,8 +110,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      ID: stm_basededonnee_container
     ports:
       - "${DB_PORT}:5432"
+    labels:
+      ARTIFACT_CATEGORY: Database
     volumes:
       - dbstm:/var/lib/postgresql/data
 volumes:
