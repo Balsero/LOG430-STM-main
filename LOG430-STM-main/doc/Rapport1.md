@@ -60,7 +60,30 @@ RouteTimeProvider va donc utiliser l'API TomTom pour calculer le temps de trajet
 
 2.1 Dans le code source du projet, nous pouvons ajuster le taux de lancement des requêtes. Expliquez comment nous pouvons nous y prendre pour ce faire en donnant un ou des extraits spécifiques de code. **/2**
 
+Il est possible d'ajuster le taux de lancement des requêtes, et ce, en contrôlant la fréquence avec Task.Delay. Tout d'abord, dans le service de suivi des trajets, l'intervalle de temps entre tous les envois de la commande UpdateRidesTrackingCommand est géré par un délai nommé Task.Delay. Ce dernier est défini par la variable UpdateIntervalInMs de sorte que la commande soit exécutée par une boucle infinie tant que le CancellationToken n'a pas arrêté le service. En voici un exemple : 
 
+while (!stoppingToken.IsCancellationRequested)
+{
+    await commandDispatcher.DispatchAsync(new UpdateRidesTrackingCommand(), stoppingToken);
+    await Task.Delay(TimeSpan.FromMilliseconds(UpdateIntervalInMs), stoppingToken);
+}
+
+Ainsi, afin d'envoyer des requêtes de manière plus fréquentes, il suffit de changer et donc diminuer la valeur de UpdateIntervalInMs par exemple de 10 000 ms à 5 000 ms réduira de moitié le temps d'attente entre chaque requête. En ce qui concerne la fréquence de ces dernières, il faut augmenter la valeur afin que les requêtes soient espacées dans des périodes plus longues. Finalement, cela permet entre autre de contrôler avec précision comment le taux de requêtes envoyées par le microservice est géré tout en assurant un équilibre entre la nécessité d'actualiser les données et la charge du système. 
+
+De plus, afin d'ajuster le taux de lancement des requêtes, il est possible de limiter le débit des requêtes avec Rate Limiting. Ceci est un autre mécanisme de contrôle mis en place dans un des fichiers Program.cs où une certaine politique de limitation de débit y est configurée. Le nombre de requêtes est alors limité lorsqu'elles sont envoyées à une API tierce comme le démontre le code suivant :
+
+builder.Services.AddRateLimiter(_ => _
+    .AddFixedWindowLimiter(policyName: "fixed", options =>
+    {
+        options.PermitLimit = 2;
+        options.Window = TimeSpan.FromSeconds(10);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 0;
+    }));
+
+Ainsi, en regardant le code ci-haut, on remarque plusieurs choses dont le PermitLimit ayant pour but de définir le nombre maximal de requêtes autorisées dans la fenêtre de temps définie. Ce dernier a été défini sur 2 donc seulement 2 requêtes sont autorisées. Window, quant à lui, va plutôt indiquer la durée de la fenêtre de temps pendant laquelle le nombre de requêtes est limité et donc 10 secondes dans notre cas. Finalement, QueueLimit et QueueProcessingOrder permettant de mieux gérer les requêtes excédentaires et donc ici, aucune requête ne sera mise en file d'attente, car il est défini à 0. 
+
+Afin d'augmenter le nombre de requêtes ou bien ajuster la période, il faut respectivement augmenter la valeur PermitLimit ou bien modifier la valeur de Window. Cette approche permet ainsi de contrôler le volume de requêtes envoyé à des API externes comme ceux utilisés dans le projet soient TomTom ou STM assurant donc d'éviter les surcharges en plus de respecter les limites d'utilisation des services tiers.
 
 3. Proposez une tactique permettant d'améliorer la disponibilité de l'application lors d'une attaque des conteneurs de computation (**TripComparator**, **RouteTimeProvider**, et **STM**) lors du 2e laboratoire. **/3**
 
