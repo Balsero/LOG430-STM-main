@@ -1,36 +1,33 @@
 # Laboratoire #1
 
-Groupe: 0x
+Groupe: 02
 
-Equipe: 0x
+Equipe: 04
 
-Membres de l'équipe:
+Membres de l'équipe: Ali Dickens Augustin, Jean-Philippe Lalonde, Jonathan Rodriguez Tames et Alexandre Roy
 
 # Évaluation de la participation
 
 > L'évaluation suivante est faite afin d'encourager des discussions au sein de l'équipe. Une discussion saine du travail de chacun est utile afin d'améliorer le climat de travail. Les membres de l'équipe ont le droit de retirer le nom d'un ou une collègue du rapport.
 > |nom de l'étudiant| Facteur multiplicatif|
 > |:---------------:|:--------------------:|
-> |Jean Travaillant | 1 |
-> |Joe Paresseux | 0.75 |
-> |Jules Procrastinateu| 0.5 |
-> |Jeanne Parasite | 0.25 |
-> |Jay Oublié| 0 |
+> |Ali Dickens Augustin | 1 |
+> |Jean-Philippe Lalonde | 1 |
+> |Jonathan Rodriguez Tames| 1 |
+> |Alexandre Roy | 1 |
 
 # Introduction /2
 
-> TODO: insérer votre introduction
+> Dans ce laboratoire, l'objectif principal est de comprendre et mettre en oeuvre les concepts de microservice du projet LOG430-STM. De plus, chaque microservice joue un rôle distinct dans le but d'intéragir ensemble afin de fournir des fonctionnalités telle que la collecte, le traitement et la comparaison de données liés au transport en commun des bus de la STM, et ce, en temps réel. L'architecture du projet implique entre autre une série de conteneurs Docker, qui doivent être déployés ainsi que configurés correctement dans le but de garantir la communication efficace entre les différents microservices. Ainsi, l'équipe est amené à explorer ensemble diverces tâches, dont la configuration initiale du système, de l'exécution de microservices sur Docker, d'intéragir avec des API externes et de manipuler des données réelles, et ce, en passant par l'optimisation des performances grâce à l'ajout de bases de données, l'ajout d'un ping echo et donc à la mise en oeuvre de tactiques de résilience.
 
 # Diagramme de séquence de haut niveau
 
 ## Explication générale du fonctionnement du système /2
 
-> TODO: Résumer sommairement ce que chaque microservice fait dans le système :
-
-- **NodeController** :
-- **STM** :
-- **RouteTimeProvider** :
-- **TripComparator** :
+> - **NodeController** : Ce dernier est considéré comme étant le chef d'orchestre des tests de chaos, assurant ainsi la perturbation contrôlée des microservices afin de tester entre autre leur résilience. Ensuite, celui-ci a pour but de surveiller la durée de vie des différents conteneurs Docker et de fournir des mécanismes pour gérer, équilibrer ou même créer la charge de ces derneirs. Ainsi, le NodeController a pour but de faciliter la connexion aux serveurs de l'ÉTS ce qui permet donc de communiquer avec le restant du système et son API permet d'ajuster dynamiquement les différents services en cours d'exécution. Finalement, son équilibrage de charge utilise deux stratégies étant le Round Robin étant décrit comme distributeur de requêtes de manière aléatoire, et ce, parmi les instances disponibles. Le second étant Broadcast, qui lui envoie plutôt la requête à toutes les instances.
+- **STM** : Le microservice STM agit de son côté comme étant un adaptateur pour l'API de la Société de Transport de Montréal (STM). Ce dernoer fournit entre autre des fonctionnalités supplémentaires par rapport à l'API originale, dont l'obtention de données à intervalles réguliers (50 ms) et le suivi en temps réel des bus entre deux coordonnées spécifiques. Le STM est basé sur une architecture en couche, respectant donc le principe d'inversion des dépendences dans le but de faciliter toutes modifications et de maximiser la modularité. Ainsi, afin d'améliorer les performences de ce services, l'équipe doit donc configuré une base de donnée afin que celui-ci stocke ses données statiques GTFS dans cette dernière (PostgreSQL) plutôt que de la conserver en mémoire ce qui réduit alors l'utilisation de la RAM.
+- **RouteTimeProvider** : Le microservice RouteTimeProvider a pour but de fournir des informations sur le temps de trajet basé sur les routes et les horaires disponibles pour les différents bus de la STM ou voitures, et ce, grâce à son utilisation de l'API TomTom. Au début, ce microservice n'est pas fonctionnel dans le projet et donc la création d'un fichier Dockerfile est obligatoire afin de rendre ce dernier opérationnel permettant ainsi la possibilité d'exécuter ses différentes fonctions. De plus, lorsque ce dernier configuré selon les normes du projet, il exposera une route nommé ping echo ayant pour but simple de vérifier son état de fonctionnement tous les 0.5 secondes, et ce, grâce à son instance. Si cette dernière est acitve, la route transmettera un message isAlive, permettant aux autres microservices de s'assurer qu'il est bien fonctionnel.
+- **TripComparator** : Finalement, le TripComparator a pour mission de comparer les différentes options de trajet. Son fonctionnement est qu'il surveille en permanence l'état du RouteTimeProvider afin de vérifier sa disponibilité grâce à l'envoi du ping echo configuré préàlablement. De plus, si le microservice RouteTimeProvider est redéployé ou bien détruit, ce dernier va détecté ce changement et donc identifier un nouveau port sur lequel l'instance sera possible. Ainsi, cette fonctionnalité de surveillance continue assure la réactivité et le fonctionnement opérationnel du système le rendant ainsi plus dynamiques aux différents changements.
 
 ## Diagramme de séquence /3
 
@@ -62,9 +59,7 @@ Membres de l'équipe:
 
 # Conclusion du laboratoire /2
 
-> TODO: insérer votre conclusion
+> En conclusion, ce projet offre une expérience pratique permettant davantage la compréhension du déploiement et la gestion des microservices. De plus,, en travaillant sur la performance du systèmes ainsi que l'amélioration de la disponibilité, l'équipe a acquit plusieurs connaissances et différentes compétences notamment en configuration Docker, en surveillance de l'état des services par la configuration entre autre du ping echo et en intégration de bases de données. Finalement, le travail effectué sur les microservices sur la comparaison de trajets en temps réel a permis de développer une certaine expertise en ce qui concerne le fait de maintenir et concevoir des systèmes complexes, et ce, basés sur une architecture de microservices.
 
-- N'oubliez pas d'effacer les TODO
-- Générer une version PDF de ce document pour votre remise finale.
-- Assurez-vous du bon format de votre rapport PDF.
+
 - Créer un tag git avec la commande "git tag laboratoire-1"
