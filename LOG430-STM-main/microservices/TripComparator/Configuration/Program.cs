@@ -8,9 +8,15 @@ using MassTransit;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.OpenApi.Models;
 using MqContracts;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using ServiceMeshHelper;
+using ServiceMeshHelper.BusinessObjects.InterServiceRequests;
+using ServiceMeshHelper.BusinessObjects;
 using ServiceMeshHelper.Controllers;
+
+
+
 
 namespace Configuration
 {
@@ -43,7 +49,16 @@ namespace Configuration
 
             app.MapControllers();
 
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            // Démarrer le ping echo avant de lancer l'application
+            var cancellationTokenSource = new CancellationTokenSource();
+            Task.Run(() => StartPingingRouteTimeProvider(app.Services, logger, cancellationTokenSource.Token));
+
+            // Lancer l'application
             await app.RunAsync();
+
+            // Annuler le ping quand l'application se termine
+            cancellationTokenSource.Cancel();
         }
 
         private static void ConfigureServices(IServiceCollection services)
@@ -115,6 +130,53 @@ namespace Configuration
                     cfg.Publish<BusPositionUpdated>(p => p.ExchangeType = ExchangeType.Topic);
                 });
             });
+        }
+
+        private static async Task StartPingingRouteTimeProvider(IServiceProvider services, ILogger logger, CancellationToken cancellationToken)
+        {
+
+            const int pingIntervalMs = 1000; // Intervalle de ping en millisecondes
+            logger.LogInformation("Starting the ping echo to RouteTimeProvider.");
+
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    // Appeler la route 'isAlive' en mode RoundRobin
+                    var res = await RestController.Get(
+                        new GetRoutingRequest()
+                        {
+                            TargetService = "RouteTimeProvider",
+                            Endpoint = $"RouteTime/isAlive", 
+                            Mode = LoadBalancingMode.RoundRobin // Mode RoundRobin pour le ping echo
+                        });
+
+                    // Itérer sur les résultats asynchrones
+                    await foreach (var result in res!.ReadAllAsync())
+                    {
+                        // Vérifier si le service est en vie
+                        if (JsonConvert.DeserializeObject<string>(result.Content) == "isAlive")
+                        {
+                               // on fait quand c'est Alive
+                        }
+                        else
+                        {
+                            
+                            logger.LogInformation("RouteTimeProvider is not responding.");
+                        }
+                        break; // On a vérifié la première réponse, on peut sortir
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                    logger.LogError(ex, $"RouteTimeProvider service is not available. Detailed error: {ex.GetType().Name} - {ex.Message}");
+                }
+
+                // Attendre avant de refaire une tentative de ping
+                await Task.Delay(pingIntervalMs, cancellationToken);
+            }
         }
     }
 }

@@ -30,5 +30,14 @@ namespace RouteTimeProvider.Controllers
 
             return Ok(travelTime);
         }
+
+        [HttpGet]
+        [ActionName(nameof(isAlive))]
+        [EnableRateLimiting("fixed")]
+        public async Task<ActionResult<string>> isAlive()
+        {
+
+            return Ok("isAlive");
+        }
     }
 }
