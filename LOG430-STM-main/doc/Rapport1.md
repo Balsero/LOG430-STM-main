@@ -8,8 +8,6 @@ Membres de l'équipe: Ali Dickens Augustin, Jean-Philippe Lalonde, Jonathan Rodr
 
 # Évaluation de la participation
 
-> L'évaluation suivante est faite afin d'encourager des discussions au sein de l'équipe. Une discussion saine du travail de chacun est utile afin d'améliorer le climat de travail. Les membres de l'équipe ont le droit de retirer le nom d'un ou une collègue du rapport.
-
 |Nom de l'étudiant| Facteur multiplicatif|
 |:---------------:|:--------------------:|
 |Ali Dickens Augustin | 1 | 
@@ -32,8 +30,6 @@ Dans ce laboratoire, l'objectif principal est de comprendre et mettre en œuvre 
 
 ## Diagramme de séquence /3
 
-> TODO: Insérer le diagramme de séquence de haut niveau pour illustrer ce qui arrive lorsqu'une requête de comparaison de trajet provenant du dashboard arrive au système.
-
 1. **Acteurs** :
     - Utilisateur
     - Dashboard
@@ -49,7 +45,7 @@ Dans ce laboratoire, l'objectif principal est de comprendre et mettre en œuvre 
 1. **L'utilisateur interagit avec le tableau de bord** :
     
     - L'utilisateur effectue une demande de comparaison de trajet entre deux coordonnées en appuyant sur le bouton "Begin"
-    
+
 2. **Requête du Dashboard au NodeController** :
     
     - Le tableau de bord envoie une requête au NodeController pour obtenir les information de comparaison en fournissant des coordonnées
