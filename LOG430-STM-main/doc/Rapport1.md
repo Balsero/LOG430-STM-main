@@ -104,7 +104,7 @@ Dans ce laboratoire, l'objectif principal est de comprendre et mettre en œuvre 
 
 ### Représentation visuelle :
 
-Voici une représentation textuelle du diagramme de séquence :
+![Diagramme Sequence](Diagramme%20sequence.svg)
 
 
 # Diagrammes de contexte de haut niveau
@@ -166,6 +166,3 @@ Il y a plusieurs tactiques différentes qui permettraient entre autres d'amélio
 # Conclusion du laboratoire /2
 
 En conclusion, ce projet offre une expérience pratique permettant davantage la compréhension du déploiement et la gestion des microservices. De plus, en travaillant sur la performance du système ainsi que l'amélioration de la disponibilité, l'équipe a acquis plusieurs connaissances et différentes compétences notamment en configuration Docker, en surveillance de l'état des services par la configuration entre autres du ping echo et en intégration de bases de données. Finalement, le travail effectué sur les microservices sur la comparaison de trajets en temps réel a permis de développer une certaine expertise en ce qui concerne le fait de maintenir et concevoir des systèmes complexes, et ce, basés sur une architecture de microservices.
-
-
-- Créer un tag git avec la commande "git tag laboratoire-1"
