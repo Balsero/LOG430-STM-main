@@ -9,12 +9,13 @@ Membres de l'équipe: Ali Dickens Augustin, Jean-Philippe Lalonde, Jonathan Rodr
 # Évaluation de la participation
 
 > L'évaluation suivante est faite afin d'encourager des discussions au sein de l'équipe. Une discussion saine du travail de chacun est utile afin d'améliorer le climat de travail. Les membres de l'équipe ont le droit de retirer le nom d'un ou une collègue du rapport.
-> |nom de l'étudiant| Facteur multiplicatif|
-> |:---------------:|:--------------------:|
-> |Ali Dickens Augustin | 1 |
-> |Jean-Philippe Lalonde | 1 |
-> |Jonathan Rodriguez Tames| 1 |
-> |Alexandre Roy | 1 |
+
+|Nom de l'étudiant| Facteur multiplicatif|
+|:---------------:|:--------------------:|
+|Ali Dickens Augustin | 1 | 
+|Jean-Philippe Lalonde | 1 |
+|Jonathan Rodriguez Tames| 1 |
+|Alexandre Roy | 1 |
 
 # Introduction /2
 
@@ -32,6 +33,79 @@ Dans ce laboratoire, l'objectif principal est de comprendre et mettre en œuvre 
 ## Diagramme de séquence /3
 
 > TODO: Insérer le diagramme de séquence de haut niveau pour illustrer ce qui arrive lorsqu'une requête de comparaison de trajet provenant du dashboard arrive au système.
+
+1. **Acteurs** :
+    - Utilisateur
+    - Dashboard
+    - NodeController
+    - TripComparator
+    - STM
+    - RouteTimeProvider
+    - API STM
+    - API TOMTOM
+    
+### Étapes de la séquence :
+
+1. **L'utilisateur interagit avec le tableau de bord** :
+    
+    - L'utilisateur effectue une demande de comparaison de trajet entre deux coordonnées en appuyant sur le bouton "Begin"
+    
+2. **Requête du Dashboard au NodeController** :
+    
+    - Le tableau de bord envoie une requête au NodeController pour obtenir les information de comparaison en fournissant des coordonnées
+    
+3. **NodeController traite la requête** :
+    
+    - Le NodeController reçoit la requête et transmet la requête de comparaison au TripComparator 
+    - Le NodeController commence a surveiller les services et équilibrer les charge
+    
+4. **TripComparator traite la requête:
+    
+    - Le TripComparator envoie une requete au RouteTimeProvider.
+    - Le  TripComparator envoie une requête au STM.
+    - il va faire des vérifications chaques secondes pour suivi des bus au STM.
+
+5. STM Traite la requête  :
+	- Le STM envoi une requête a l'api STM pour trouver le Bus le plus proche des coordonées 
+	- Le STM fais des vérifications a chaque secondes pour la position du bus.
+
+6. **RouteTimeProvider traite la requête** :
+    
+    - RouteTimeProvider envoi une requête de calcul de trajet entre les coordonnées a L'API TomTom.
+    
+7. **Réponse de l'API TomTom au RouteTimeProvider** :
+    
+    - L'api TomTom envoie au RoutetimeProvider le calcul de temps en voiture.
+    
+8. **Réponse de l'API STM au STM** :
+    
+    - L'API traite la requête et renvoie le Bus le plus proche de la coordonnée de départ
+    - L'API envoi a intervalle régulier la position de ce bus sur le trajet jusqu’à la coordonnée d'arrivée
+
+ 9. **Réponse de RouteTimeProvider a TripComparator** :
+    - Le RouteTimeProvider envoie au TripComparator le calcul de temps en voiture.
+    
+10. **Réponse de STM au TripComparator** :
+    
+    - L'API traite la requête et renvoie le Bus le plus proche de la coordonnée de départ
+    - Le STM envoi a intervalle régulier la position de ce bus sur le trajet jusqu'à la coordonnée d'arrivé a TripComparator
+    
+1. **Réponse de TripComparator au NodeController** :
+    
+    - TripComparator renvoi a Le calcul du temps que ça prends en voiture 
+    - TripComparator envoi a intervalle régulier la position de ce bus sur le trajet jusqu’à la coordonnée d'arrivé
+12. **NodeController retourne les données au Dashboard** :
+    
+    - Le NodeController envoie les données récupérées au tableau de bord.
+    
+13. **Mise à jour du Dashboard** :
+    
+    - Le tableau de bord met à jour l'interface utilisateur avec les données reçues.
+
+### Représentation visuelle :
+
+Voici une représentation textuelle du diagramme de séquence :
+
 
 # Diagrammes de contexte de haut niveau
 
