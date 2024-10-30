@@ -134,9 +134,10 @@ services:
     ports:
       - '32774:8080'
     labels:
+      Replicas : STM,STM2
       ARTIFACT_CATEGORY: Computation
       Pod_Links : SideCard
-      Aliases : stm1,stm2 
+      
   
   stm_basededonnee:
     image: postgres:latest

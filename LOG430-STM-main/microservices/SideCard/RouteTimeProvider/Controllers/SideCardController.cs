@@ -17,5 +17,15 @@ namespace RouteTimeProvide.Controllers
         {
             _logger = logger;
         }
+
+        [HttpGet]
+        [ActionName(nameof(isAlive))]
+        [EnableRateLimiting("fixed")]
+        public async Task<ActionResult<string>> isAlive()
+        {
+
+            return Ok("isAlive");
+        }
     }
+
 }
