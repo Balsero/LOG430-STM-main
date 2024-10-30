@@ -59,7 +59,7 @@ services:
       - '32772:8080'
     labels:
       ARTIFACT_CATEGORY: Computation
-      Replicas: RouteTimeProvider,RouteTimeProvider2,RouteTimeProvider3
+      Replicas: RouteTimeProvider,RouteTimeProvider2
 
   sideCard:
     container_name: SideCard
@@ -135,6 +135,8 @@ services:
       - '32774:8080'
     labels:
       ARTIFACT_CATEGORY: Computation
+      Pod_Links : SideCard
+      Aliases : stm1,stm2 
   
   stm_basededonnee:
     image: postgres:latest
