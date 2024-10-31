@@ -4,6 +4,11 @@ using Application.Interfaces;
 using Application.Usecases;
 using Microsoft.AspNetCore.RateLimiting;
 using RouteTimeProvider.RestClients;
+using ServiceMeshHelper;
+using ServiceMeshHelper.BusinessObjects.InterServiceRequests;
+using ServiceMeshHelper.BusinessObjects;
+using ServiceMeshHelper.Controllers;
+using Microsoft.Extensions.Logging;
 
 namespace RouteTimeProvider
 {
@@ -14,6 +19,8 @@ namespace RouteTimeProvider
             Validate();
 
             var builder = WebApplication.CreateBuilder(args);
+
+            
 
             // Add services to the container.
 
@@ -36,6 +43,8 @@ namespace RouteTimeProvider
 
             var app = builder.Build();
 
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
             app.UseSwagger();
             app.UseSwaggerUI();
 
@@ -51,9 +60,27 @@ namespace RouteTimeProvider
             app.UseCors();
 
             app.MapControllers();
-
+            
+            Test(logger);
+             
             app.Run();
+
+            
+            
         }
+
+        public static async void Test(ILogger logger)
+        {   
+            var podLeaderID = await ServiceMeshInfoProvider.PodLeaderId;
+
+            
+            // Log the podLeaderID information
+            logger.LogInformation($"Pod Leader ID: {podLeaderID}");
+
+        }
+        
+
+
 
         private static void Validate()
         {

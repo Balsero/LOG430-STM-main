@@ -137,6 +137,7 @@ services:
       Replicas : STM,STM2
       ARTIFACT_CATEGORY: Computation
       Pod_Links : SideCard
+      DNS : Public
       
   
   stm_basededonnee:
