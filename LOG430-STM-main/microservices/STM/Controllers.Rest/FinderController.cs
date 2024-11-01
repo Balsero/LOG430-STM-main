@@ -59,11 +59,17 @@ public class FinderController : ControllerBase
     }
 
     [HttpGet]
-    [ActionName(nameof(isAlive))]
+    [ActionName(nameof(isLeader))]
     [EnableRateLimiting("fixed")]
-    public async Task<ActionResult<string>> isAlive()
+    public async Task<ActionResult<string>> isLeader()
     {
+        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER");
 
-        return Ok("isAlive");
+        if (isLeader == "true")
+        {
+            return Ok("isLeader");
+        }
+
+        return Problem("NotLeader");    
     }
 }

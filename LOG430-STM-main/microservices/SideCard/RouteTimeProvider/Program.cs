@@ -15,21 +15,11 @@ namespace RouteTimeProvider
 {
     public class Program
     {
+        private static bool _isLeader = false;
         public static void Main(string[] args)
         {
 
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-
-            builder.Services.AddRateLimiter(_ => _
-                .AddFixedWindowLimiter(policyName: "fixed", options =>
-                {
-                    options.PermitLimit = 2;
-                    options.Window = TimeSpan.FromSeconds(10);
-                    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    options.QueueLimit = 0;
-                }));
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -37,15 +27,9 @@ namespace RouteTimeProvider
 
             var app = builder.Build();
 
-            var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            
-            var cancellationTokenSource = new CancellationTokenSource();
-
-            Task.Run(() => CheckingIfLeader(app.Services, logger, cancellationTokenSource.Token));
-            cancellationTokenSource.Cancel();
-
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.UseHttpsRedirection();
 
             app.UseCors(
                 options =>
@@ -56,67 +40,79 @@ namespace RouteTimeProvider
                 }
             );
 
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            Task.Run(() => CheckingIfLeader(app.Services, logger, cancellationTokenSource.Token));
+            //Task.Run(() => Test(logger));
+            
+
             app.UseCors();
 
             app.MapControllers();
 
             app.Run();
-            
+
+            cancellationTokenSource.Cancel();
+
 
 
 
         }
 
         public static async void Test(ILogger logger)
-        {   
+        {
             var podLeaderID = await ServiceMeshInfoProvider.PodLeaderId;
 
-            
+
             // Log the podLeaderID information
             logger.LogInformation($"Pod Leader ID: {podLeaderID}");
         }
 
         private static async Task CheckingIfLeader(IServiceProvider services, ILogger logger, CancellationToken cancellationToken)
         {
+            logger.LogInformation("Starting CheckingIfLeader task...");
 
-            const int pingIntervalMs = 1000; // Intervalle de ping en millisecondes
+            const int pingIntervalMs = 50; // Intervalle de ping en millisecondes
+            
             var podLeaderID = await ServiceMeshInfoProvider.PodLeaderId;
-
+            
+            logger.LogInformation($"Pod Leader ID: {podLeaderID}");
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    // Appeler la route 'isAlive' en mode RoundRobin
+                    // Appeler la route 'isLeader' en mode Brodcast
+                    logger.LogInformation("Simulating RestController.Get call for isLeader check...");
+                    
                     var res = await RestController.Get(
                         new GetRoutingRequest()
                         {
                             TargetService = podLeaderID,
-                            Endpoint = $"Finder/isAlive",
-                            Mode = LoadBalancingMode.RoundRobin // Mode RoundRobin pour le ping echo
+                            Endpoint = $"Finder/isLeader",
+                            Mode = LoadBalancingMode.Broadcast // Utiliser Brodcast pour le ping
                         });
 
                     // Itérer sur les résultats asynchrones
                     await foreach (var result in res!.ReadAllAsync())
                     {
-                        // Vérifier si le service est en vie
-                        if (JsonConvert.DeserializeObject<string>(result.Content) == "isAlive")
+                        // Vérifier la réponse
+                        if (result.Content != null && JsonConvert.DeserializeObject<string>(result.Content) == "isLeader")
                         {
-                            logger.LogInformation($"Pod Leader ID: {podLeaderID}");
-                            logger.LogInformation("STM is responding.");
+                            logger.LogInformation("Pod leader confirmed as leader.");
                         }
                         else
                         {
-
-                            logger.LogInformation("STM is not responding.");
+                            logger.LogInformation("Pod leader is not the leader.");
                         }
                         break; // On a vérifié la première réponse, on peut sortir
                     }
                 }
                 catch (Exception ex)
                 {
-
-                    logger.LogError(ex, $"STM service is not available. Detailed error: {ex.GetType().Name} - {ex.Message}");
+                    logger.LogError(ex, $" service is not available. Detailed error: {ex.GetType().Name} - {ex.Message}");
                 }
 
                 // Attendre avant de refaire une tentative de ping

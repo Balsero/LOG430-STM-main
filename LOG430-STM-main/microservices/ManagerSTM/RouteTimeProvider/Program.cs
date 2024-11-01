@@ -20,17 +20,7 @@ namespace RouteTimeProvider
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            
-
-            builder.Services.AddRateLimiter(_ => _
-                .AddFixedWindowLimiter(policyName: "fixed", options =>
-                {
-                    options.PermitLimit = 2;
-                    options.Window = TimeSpan.FromSeconds(10);
-                    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-                    options.QueueLimit = 0;
-                }));
-
+           
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -53,7 +43,7 @@ namespace RouteTimeProvider
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Task.Run(() => StartPingingSideCard(app.Services, logger, cancellationTokenSource.Token));
+            Task.Run(() => StartPingingSideCards(app.Services, logger, cancellationTokenSource.Token));
 
             app.UseCors();
 
@@ -64,40 +54,31 @@ namespace RouteTimeProvider
             // Annuler le ping quand l'application se termine
             cancellationTokenSource.Cancel();
         }
-        private static async Task StartPingingSideCard(IServiceProvider services, ILogger logger, CancellationToken cancellationToken)
+        private static async Task StartPingingSideCards(IServiceProvider services, ILogger logger, CancellationToken cancellationToken)
         {
             const int pingIntervalMs = 1000; // Intervalle de ping en millisecondes
-            logger.LogInformation("Starting the ping echo to RouteTimeProvider in broadcast mode.");
+       
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    // Appeler la route 'isAlive' en mode Broadcast
-                    var res = await RestController.Get(
-                        new GetRoutingRequest()
-                        {
-                            TargetService = "STM.SideCard",
-                            Endpoint = $"SideCard/isAlive",
-                            Mode = LoadBalancingMode.Broadcast // Mode Broadcast pour ping echo
-                        });
+                  
+                    bool sideCard1Alive = await PingService("STM.SideCard", logger);
+                    bool sideCard2Alive = await PingService("STM2.SideCard2", logger);
 
-                    // Itérer sur les résultats asynchrones
-                    bool anyServiceAlive = false;
-                    await foreach (var result in res!.ReadAllAsync())
+                    // Loguer le résultat final pour SideCard et SideCard2
+                    if (sideCard1Alive && sideCard2Alive)
                     {
-                        // Vérifier si le service est en vie
-                        if (JsonConvert.DeserializeObject<string>(result.Content) == "isAlive")
-                        {
-                            anyServiceAlive = true;
-                            break; // Au moins un service est en vie, on peut sortir
-                        }
+                        logger.LogInformation("Both SideCard and SideCard2 instances are responding.");
                     }
-
-                    // Loguer le résultat final pour tous les services
-                    if (anyServiceAlive)
+                    else if (sideCard1Alive)
                     {
-                        logger.LogInformation("At least one SideCard instance is responding.");
+                        logger.LogInformation("Only SideCard instance is responding.");
+                    }
+                    else if (sideCard2Alive)
+                    {
+                        logger.LogInformation("Only SideCard2 instance is responding.");
                     }
                     else
                     {
@@ -106,12 +87,50 @@ namespace RouteTimeProvider
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $"SideCard service is not available. Detailed error: {ex.GetType().Name} - {ex.Message}");
+                    logger.LogError(ex, $"An error occurred while checking SideCard services. Detailed error: {ex.GetType().Name} - {ex.Message}");
                 }
 
                 // Attendre avant de refaire une tentative de ping
                 await Task.Delay(pingIntervalMs, cancellationToken);
             }
+        }
+
+        private static async Task<bool> PingService(string targetService, ILogger logger)
+        {
+            try
+            {
+                logger.LogInformation($"Attempting to ping {targetService}.");
+
+                var res = await RestController.Get(
+                    new GetRoutingRequest()
+                    {
+                        TargetService = targetService,
+                        Endpoint = "SideCard/isAlive",
+                        Mode = LoadBalancingMode.Broadcast // Assurez-vous que ce mode est pris en charge
+                    });
+
+                if (res == null)
+                {
+                    logger.LogWarning($"Routing request returned null for target service: {targetService}");
+                    return false;
+                }
+
+                await foreach (var result in res.ReadAllAsync())
+                {
+                    logger.LogInformation($"Response from {targetService}: {result.Content}");
+
+                    if (JsonConvert.DeserializeObject<string>(result.Content) == "isAlive")
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to reach {targetService}. Detailed error: {ex.GetType().Name} - {ex.Message}");
+            }
+
+            return false;
         }
     }
 }
