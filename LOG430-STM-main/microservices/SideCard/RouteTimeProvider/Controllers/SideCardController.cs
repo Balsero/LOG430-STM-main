@@ -10,7 +10,6 @@ namespace RouteTimeProvide.Controllers
     [Route("[controller]/[action]")]
     public class SideCardController : ControllerBase
     {
-        private readonly CarTravel _carTravel;
         private readonly ILogger<SideCardController> _logger;
 
         public SideCardController(ILogger<SideCardController> logger)
