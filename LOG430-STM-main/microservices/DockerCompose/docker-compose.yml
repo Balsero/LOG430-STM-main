@@ -138,6 +138,7 @@ services:
       ARTIFACT_CATEGORY: Computation
       Pod_Links : SideCard
       DNS : Public
+      SHARE_VOLUMES: true
       
   
   stm_basededonnee:

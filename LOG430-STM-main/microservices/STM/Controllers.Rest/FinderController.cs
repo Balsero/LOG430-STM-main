@@ -3,6 +3,7 @@ using Application.Queries.Seedwork;
 using Application.ViewModels;
 using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 
 namespace Controllers.Rest;
@@ -55,5 +56,14 @@ public class FinderController : ControllerBase
 
             return (formattedFromLat, formattedFromLon, formattedToLat, formattedToLon);
         }
+    }
+
+    [HttpGet]
+    [ActionName(nameof(isAlive))]
+    [EnableRateLimiting("fixed")]
+    public async Task<ActionResult<string>> isAlive()
+    {
+
+        return Ok("isAlive");
     }
 }

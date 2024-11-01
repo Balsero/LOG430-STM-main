@@ -9,6 +9,7 @@ using ServiceMeshHelper.BusinessObjects.InterServiceRequests;
 using ServiceMeshHelper.BusinessObjects;
 using ServiceMeshHelper.Controllers;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace RouteTimeProvider
 {
@@ -16,11 +17,8 @@ namespace RouteTimeProvider
     {
         public static void Main(string[] args)
         {
-            Validate();
 
             var builder = WebApplication.CreateBuilder(args);
-
-            
 
             // Add services to the container.
 
@@ -33,17 +31,18 @@ namespace RouteTimeProvider
                     options.QueueLimit = 0;
                 }));
 
-            builder.Services.AddSingleton<IRouteTimeProvider, TomTomClient>();
-            builder.Services.AddScoped<CarTravel>();
-
             builder.Services.AddControllers();
-
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            Task.Run(() => CheckingIfLeader(app.Services, logger, cancellationTokenSource.Token));
+            cancellationTokenSource.Cancel();
 
             app.UseSwagger();
             app.UseSwaggerUI();
@@ -60,13 +59,12 @@ namespace RouteTimeProvider
             app.UseCors();
 
             app.MapControllers();
-            
-            Test(logger);
-             
-            app.Run();
 
+            app.Run();
             
-            
+
+
+
         }
 
         public static async void Test(ILogger logger)
@@ -76,19 +74,54 @@ namespace RouteTimeProvider
             
             // Log the podLeaderID information
             logger.LogInformation($"Pod Leader ID: {podLeaderID}");
-
         }
-        
 
-
-
-        private static void Validate()
+        private static async Task CheckingIfLeader(IServiceProvider services, ILogger logger, CancellationToken cancellationToken)
         {
-            var apiKey = Environment.GetEnvironmentVariable("API_KEY") ?? throw new Exception("API_KEY environment variable not found");
 
-            if (string.IsNullOrWhiteSpace(apiKey))
-                throw new ArgumentNullException("API_KEY",
-                    "The api key was not defined in the env variables, this is critical");
+            const int pingIntervalMs = 1000; // Intervalle de ping en millisecondes
+            var podLeaderID = await ServiceMeshInfoProvider.PodLeaderId;
+
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    // Appeler la route 'isAlive' en mode RoundRobin
+                    var res = await RestController.Get(
+                        new GetRoutingRequest()
+                        {
+                            TargetService = podLeaderID,
+                            Endpoint = $"Finder/isAlive",
+                            Mode = LoadBalancingMode.RoundRobin // Mode RoundRobin pour le ping echo
+                        });
+
+                    // Itérer sur les résultats asynchrones
+                    await foreach (var result in res!.ReadAllAsync())
+                    {
+                        // Vérifier si le service est en vie
+                        if (JsonConvert.DeserializeObject<string>(result.Content) == "isAlive")
+                        {
+                            logger.LogInformation($"Pod Leader ID: {podLeaderID}");
+                            logger.LogInformation("STM is responding.");
+                        }
+                        else
+                        {
+
+                            logger.LogInformation("STM is not responding.");
+                        }
+                        break; // On a vérifié la première réponse, on peut sortir
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                    logger.LogError(ex, $"STM service is not available. Detailed error: {ex.GetType().Name} - {ex.Message}");
+                }
+
+                // Attendre avant de refaire une tentative de ping
+                await Task.Delay(pingIntervalMs, cancellationToken);
+            }
         }
     }
 }
