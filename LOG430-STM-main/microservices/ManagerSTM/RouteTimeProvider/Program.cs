@@ -9,11 +9,13 @@ using ServiceMeshHelper.BusinessObjects.InterServiceRequests;
 using ServiceMeshHelper.BusinessObjects;
 using ServiceMeshHelper.Controllers;
 using System.Threading;
+using System.Diagnostics.Eventing.Reader;
 
 namespace RouteTimeProvider
 {
     public class Program
     {
+    
         public static void Main(string[] args)
         {
 
@@ -43,59 +45,198 @@ namespace RouteTimeProvider
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             var cancellationTokenSource = new CancellationTokenSource();
 
-            Task.Run(() => StartPingingSideCards(app.Services, logger, cancellationTokenSource.Token));
+            
 
             app.UseCors();
 
             app.MapControllers();
-
+            Task.Run(() => StartLeaderManagement(cancellationTokenSource.Token,logger));
             app.Run();
 
             // Annuler le ping quand l'application se termine
             cancellationTokenSource.Cancel();
         }
-        private static async Task StartPingingSideCards(IServiceProvider services, ILogger logger, CancellationToken cancellationToken)
+
+        public static async Task StartLeaderManagement(CancellationToken cancellationToken, ILogger logger)
         {
-            const int pingIntervalMs = 1000; // Intervalle de ping en millisecondes
-       
+            logger.LogInformation("Starting continuous Leader Management task between SideCard and SideCard2...");
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                try
-                {
-                  
-                    bool sideCard1Alive = await PingService("STM.SideCard", logger);
-                    bool sideCard2Alive = await PingService("STM2.SideCard2", logger);
+                bool leaderAssigned = await CheckIfLeaderExists(logger);
 
-                    // Loguer le résultat final pour SideCard et SideCard2
-                    if (sideCard1Alive && sideCard2Alive)
+                if (!leaderAssigned)
+                {
+                    logger.LogInformation("No leader assigned. Attempting to promote a leader...");
+
+                    bool sideCard1Alive = await IsSideCardAlive("STM.SideCard", logger);
+                    bool sideCard2Alive = await IsSideCardAlive("STM2.SideCard2", logger);
+
+                    if (!sideCard1Alive && !sideCard2Alive)
                     {
-                        logger.LogInformation("Both SideCard and SideCard2 instances are responding.");
-                    }
-                    else if (sideCard1Alive)
-                    {
-                        logger.LogInformation("Only SideCard instance is responding.");
-                    }
-                    else if (sideCard2Alive)
-                    {
-                        logger.LogInformation("Only SideCard2 instance is responding.");
+                        logger.LogWarning("Both SideCards are down. Cannot assign a leader.");
                     }
                     else
                     {
-                        logger.LogInformation("No SideCard instance is responding.");
+                        // Tentative de promotion avec vérification stricte
+                        bool promotionSucceeded = false;
+
+                        if (sideCard1Alive && !await CheckIfOtherSideCardIsLeader("STM2.SideCard2", logger))
+                        {
+                            if (!await CheckIfLeaderExists(logger))
+                            {
+                                promotionSucceeded = await AttemptLeaderPromotion("STM.SideCard", logger);
+                                if (promotionSucceeded)
+                                {
+                                    logger.LogInformation("STM.SideCard is now the leader.");
+                                }
+                            }
+                        }
+
+                        if (!promotionSucceeded && sideCard2Alive && !await CheckIfOtherSideCardIsLeader("STM.SideCard", logger))
+                        {
+                            if (!await CheckIfLeaderExists(logger))
+                            {
+                                promotionSucceeded = await AttemptLeaderPromotion("STM2.SideCard2", logger);
+                                if (promotionSucceeded)
+                                {
+                                    logger.LogInformation("SideCard2 is now the leader.");
+                                }
+                            }
+                        }
+
+                        if (!promotionSucceeded)
+                        {
+                            logger.LogWarning("Failed to promote any SideCard to leader.");
+                        }
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    logger.LogError(ex, $"An error occurred while checking SideCard services. Detailed error: {ex.GetType().Name} - {ex.Message}");
+                    logger.LogInformation("A leader is already assigned.");
                 }
 
-                // Attendre avant de refaire une tentative de ping
-                await Task.Delay(pingIntervalMs, cancellationToken);
+                await Task.Delay(1000, cancellationToken); // Délai entre chaque boucle pour éviter la promotion rapide
             }
         }
 
-        private static async Task<bool> PingService(string targetService, ILogger logger)
+        private static async Task<bool> CheckIfLeaderExists(ILogger logger)
+        {
+            bool sideCard1IsLeader = await CheckIfOtherSideCardIsLeader("STM.SideCard", logger);
+            bool sideCard2IsLeader = await CheckIfOtherSideCardIsLeader("STM2.SideCard2", logger);
+
+            if (sideCard1IsLeader && sideCard2IsLeader)
+            {
+                // Resolve conflict by demoting one of them. Let's demote SideCard2 in this case.
+                logger.LogWarning("Conflict detected: Both SideCard1 and SideCard2 are claiming leadership. Demoting SideCard2.");
+
+                // Attempt to demote SideCard2 by calling a demotion endpoint or setting the environment variable to "false".
+                bool demotionSucceeded = await DemoteLeader("STM2.SideCard2", logger);
+
+                if (demotionSucceeded)
+                {
+                    logger.LogInformation("SideCard2 has been demoted successfully. SideCard1 remains the leader.");
+                    return true;
+                }
+                else
+                {
+                    logger.LogError("Failed to demote SideCard2. Manual intervention may be required.");
+                    return true; // Return true to indicate there's a leader, but a conflict persists.
+                }
+            }
+
+            if (sideCard1IsLeader || sideCard2IsLeader)
+            {
+                logger.LogInformation("A leader is already assigned.");
+                return true;
+            }
+
+            logger.LogInformation("No leader is currently assigned.");
+            return false;
+        }
+
+        // Méthode pour vérifier si l'autre SideCard est déjà leader
+        private static async Task<bool> CheckIfOtherSideCardIsLeader(string targetService, ILogger logger)
+        {
+            try
+            {
+                var res = await RestController.Get(
+                    new GetRoutingRequest()
+                    {
+                        TargetService = targetService,
+                        Endpoint = $"SideCard/isLeader",
+                        Mode = LoadBalancingMode.Broadcast
+                    });
+
+                await foreach (var result in res!.ReadAllAsync())
+                {
+                    if (result.Content != null && JsonConvert.DeserializeObject<string>(result.Content) == "isLeader")
+                    {
+                        logger.LogInformation($"{targetService} is currently the leader.");
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error checking leader status for {targetService}. Error: {ex.Message}");
+            }
+
+            return false;
+        }
+
+        private static async Task<bool> DemoteLeader(string targetService, ILogger logger)
+        {
+            try
+            {
+                var res = await RestController.Get(
+                    new GetRoutingRequest()
+                    {
+                        TargetService = targetService,
+                        Endpoint = "Leader/Demote",
+                        Mode = LoadBalancingMode.Broadcast // Ensure this mode is supported
+                    });
+
+                await foreach (var result in res!.ReadAllAsync())
+                {
+                    if (result.Content != null && result.Content == "Demotion success")
+                    {
+                        logger.LogInformation($"{targetService} has been demoted.");
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error demoting {targetService}. Error: {ex.Message}");
+            }
+
+            logger.LogWarning($"Failed to demote {targetService}.");
+            return false;
+        }
+
+        // <summary>
+        /// Vérifie si un leader est actuellement assigné en interrogeant les deux SideCards.
+        /// </summary>
+        private static async Task<bool> IsLeaderAssigned(ILogger logger)
+        {
+            // Vérifiez si SideCard ou SideCard2 est déjà le leader
+            bool isSideCard1Leader = await IsSideCardLeader("STM.SideCard",logger);
+            bool isSideCard2Leader = await IsSideCardLeader("STM2.SideCard2", logger);
+
+            if (isSideCard1Leader || isSideCard2Leader)
+            {
+                logger.LogInformation("A leader is already assigned.");
+                return true;
+            }
+
+            logger.LogInformation("No leader is currently assigned.");
+            return false;
+        }
+
+
+
+        private static async Task<bool> IsSideCardAlive(string targetService, ILogger logger)
         {
             try
             {
@@ -127,9 +268,72 @@ namespace RouteTimeProvider
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to reach {targetService}. Detailed error: {ex.GetType().Name} - {ex.Message}");
+                logger.LogError(ex, $"Error checking if {targetService} is alive. Detailed error: {ex.GetType().Name} - {ex.Message}");
             }
 
+            logger.LogWarning($"{targetService} is not alive.");
+            return false;
+        }
+
+        private static async Task<bool> IsSideCardLeader(string targetService, ILogger logger)
+        {
+            try
+            {
+                var res = await RestController.Get(
+                    new GetRoutingRequest()
+                    {
+                        TargetService = targetService,
+                        Endpoint = $"SideCard/CheckIfLeader",
+                        Mode = LoadBalancingMode.RoundRobin
+                    });
+                await foreach (var result in res!.ReadAllAsync())
+                {
+                    if (result.Content != null && JsonConvert.DeserializeObject<string>(result.Content) == "Pod leader is confirmed as the leader.")
+                    {
+                        logger.LogInformation($"{targetService} is the leader.");
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error checking if {targetService} is leader. Detailed error: {ex.GetType().Name} - {ex.Message}");
+            }
+
+            logger.LogInformation($"{targetService} is not the leader.");
+            return false;
+        }
+
+        /// <summary>
+        /// Tente de promouvoir le SideCard spécifié en tant que leader.
+        /// </summary>
+        private static async Task<bool> AttemptLeaderPromotion(string targetService, ILogger logger)
+        {
+            try
+            {
+                var res = await RestController.Get(
+                    new GetRoutingRequest()
+                    {
+                        TargetService = targetService,
+                        Endpoint = $"SideCard/PromoteToLeader",
+                        Mode = LoadBalancingMode.Broadcast
+                    });
+
+                await foreach (var result in res!.ReadAllAsync())
+                {
+                    if (result.Content != null && result.Content == "Promoted to leader")
+                    {
+                        logger.LogInformation($"{targetService} has been promoted to leader.");
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error promoting {targetService} to leader. Detailed error: {ex.GetType().Name} - {ex.Message}");
+            }
+
+            logger.LogWarning($"Failed to promote {targetService} to leader.");
             return false;
         }
     }

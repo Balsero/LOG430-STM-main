@@ -148,7 +148,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       DB_PORT: ${DB_PORT}
-      IS_LEADER: "true"
+      IS_LEADER: "false"
     ports:
       - '32774:8080'
     labels:
@@ -157,7 +157,6 @@ services:
       Pod_Links : SideCard
       DNS : Public
       SHARE_VOLUMES: true
-
 
   stm2:
     container_name: STM2
@@ -178,7 +177,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       DB_PORT: ${DB_PORT}
-      IS_LEADER: "true"
+      IS_LEADER_2: "false"
     ports:
       - '32790:8080'
     labels:
@@ -186,6 +185,9 @@ services:
       ARTIFACT_CATEGORY: Computation
       Pod_Links : SideCard2
       DNS : Public
+
+
+  
       
       
   

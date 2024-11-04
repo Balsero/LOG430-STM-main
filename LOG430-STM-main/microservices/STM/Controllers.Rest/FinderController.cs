@@ -57,19 +57,4 @@ public class FinderController : ControllerBase
             return (formattedFromLat, formattedFromLon, formattedToLat, formattedToLon);
         }
     }
-
-    [HttpGet]
-    [ActionName(nameof(isLeader))]
-    [EnableRateLimiting("fixed")]
-    public async Task<ActionResult<string>> isLeader()
-    {
-        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER");
-
-        if (isLeader == "true")
-        {
-            return Ok("isLeader");
-        }
-
-        return Problem("NotLeader");    
-    }
 }

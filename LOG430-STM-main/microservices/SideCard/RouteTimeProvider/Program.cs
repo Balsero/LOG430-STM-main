@@ -45,8 +45,6 @@ namespace RouteTimeProvider
             var cancellationTokenSource = new CancellationTokenSource();
 
             Task.Run(() => CheckingIfLeader(app.Services, logger, cancellationTokenSource.Token));
-            //Task.Run(() => Test(logger));
-            
 
             app.UseCors();
 
@@ -59,15 +57,6 @@ namespace RouteTimeProvider
 
 
 
-        }
-
-        public static async void Test(ILogger logger)
-        {
-            var podLeaderID = await ServiceMeshInfoProvider.PodLeaderId;
-
-
-            // Log the podLeaderID information
-            logger.LogInformation($"Pod Leader ID: {podLeaderID}");
         }
 
         private static async Task CheckingIfLeader(IServiceProvider services, ILogger logger, CancellationToken cancellationToken)
@@ -84,14 +73,12 @@ namespace RouteTimeProvider
             {
                 try
                 {
-                    // Appeler la route 'isLeader' en mode Brodcast
-                    logger.LogInformation("Simulating RestController.Get call for isLeader check...");
                     
                     var res = await RestController.Get(
                         new GetRoutingRequest()
                         {
                             TargetService = podLeaderID,
-                            Endpoint = $"Finder/isLeader",
+                            Endpoint = $"Leader/IsLeader",
                             Mode = LoadBalancingMode.Broadcast // Utiliser Brodcast pour le ping
                         });
 
@@ -101,18 +88,18 @@ namespace RouteTimeProvider
                         // Vérifier la réponse
                         if (result.Content != null && JsonConvert.DeserializeObject<string>(result.Content) == "isLeader")
                         {
-                            logger.LogInformation("Pod leader confirmed as leader.");
+                            logger.LogInformation("Pod leader confirmed as leader Testing.");
                         }
                         else
                         {
-                            logger.LogInformation("Pod leader is not the leader.");
+                            logger.LogInformation("Pod leader is not the leader Testing.");
                         }
                         break; // On a vérifié la première réponse, on peut sortir
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $" service is not available. Detailed error: {ex.GetType().Name} - {ex.Message}");
+                    logger.LogError(ex, $" Service is not available. Detailed error: {ex.GetType().Name} - {ex.Message}");
                 }
 
                 // Attendre avant de refaire une tentative de ping

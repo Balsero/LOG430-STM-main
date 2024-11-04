@@ -55,21 +55,8 @@ namespace RouteTimeProvider
             app.Run();
 
             cancellationTokenSource.Cancel();
-
-
-
-
         }
-
-        public static async void Test(ILogger logger)
-        {
-            var podLeaderID = await ServiceMeshInfoProvider.PodLeaderId;
-
-
-            // Log the podLeaderID information
-            logger.LogInformation($"Pod Leader ID: {podLeaderID}");
-        }
-
+        
         private static async Task CheckingIfLeader(IServiceProvider services, ILogger logger, CancellationToken cancellationToken)
         {
             logger.LogInformation("Starting CheckingIfLeader task...");
@@ -91,7 +78,7 @@ namespace RouteTimeProvider
                         new GetRoutingRequest()
                         {
                             TargetService = podLeaderID,
-                            Endpoint = $"Finder/isLeader",
+                            Endpoint = $"Leader/isLeader",
                             Mode = LoadBalancingMode.Broadcast // Utiliser Brodcast pour le ping
                         });
 
@@ -101,11 +88,11 @@ namespace RouteTimeProvider
                         // Vérifier la réponse
                         if (result.Content != null && JsonConvert.DeserializeObject<string>(result.Content) == "isLeader")
                         {
-                            logger.LogInformation("Pod leader confirmed as leaderSTM.");
+                            logger.LogInformation("Pod leader confirmed as leader Testing.");
                         }
                         else
                         {
-                            logger.LogInformation("Pod leader is not the leaderSTM.");
+                            logger.LogInformation("Pod leader is not the leader Testing.");
                         }
                         break; // On a vérifié la première réponse, on peut sortir
                     }
