@@ -185,11 +185,6 @@ services:
       ARTIFACT_CATEGORY: Computation
       Pod_Links : SideCard2
       DNS : Public
-
-
-  
-      
-      
   
   stm_basededonnee:
     image: postgres:latest
@@ -206,7 +201,22 @@ services:
       ARTIFACT_CATEGORY: Database
     volumes:
       - dbstm:/var/lib/postgresql/data
+
+  managerSTM_redis:
+    image: redis:latest
+    container_name: managerSTM_redis_container
+    environment:
+      REDIS_ID: managerSTM_redis_container
+      REDIS_PORT: 6379
+    ports:
+      - "${REDIS_PORT:-6379}:6379"  # Utilise la variable d'environnement REDIS_PORT, avec 6379 par défaut
+    labels:
+      ARTIFACT_CATEGORY: Database
+    volumes:
+      - redis_data:/data  # Persistance des données avec un volume
+
 volumes:
+  redis_data:
   dbstm:
 
   
