@@ -10,6 +10,8 @@ using ServiceMeshHelper.BusinessObjects;
 using ServiceMeshHelper.Controllers;
 using System.Threading;
 using System.Diagnostics.Eventing.Reader;
+using ManagerSTM.Redis;
+using StackExchange.Redis;
 
 namespace RouteTimeProvider
 {
@@ -18,6 +20,14 @@ namespace RouteTimeProvider
     
         public static void Main(string[] args)
         {
+
+            // Configuration de Redis
+            var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost";
+            var redisPort = Environment.GetEnvironmentVariable("REDIS_PORT") ?? "6379";
+            var redis = ConnectionMultiplexer.Connect($"{redisHost}:{redisPort}");
+            var redisDb = redis.GetDatabase();
+            var redisService = new RedisService(redisDb);
+            redisService.TestConnection();
 
             var builder = WebApplication.CreateBuilder(args);
 
@@ -45,65 +55,75 @@ namespace RouteTimeProvider
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             var cancellationTokenSource = new CancellationTokenSource();
 
-            
-
             app.UseCors();
 
             app.MapControllers();
-            Task.Run(() => StartLeaderManagement(cancellationTokenSource.Token,logger));
+            Task.Run(() => StartLeaderManagement(cancellationTokenSource.Token,logger, redisDb));
             app.Run();
 
             // Annuler le ping quand l'application se termine
             cancellationTokenSource.Cancel();
         }
 
-        public static async Task StartLeaderManagement(CancellationToken cancellationToken, ILogger logger)
+        public static async Task StartLeaderManagement(CancellationToken cancellationToken, ILogger logger, IDatabase redisDb)
         {
+            const string leaderLockKey = "ManagerLeaderLock";
+            const int lockExpirationSeconds = 5;
+
             logger.LogInformation("Starting continuous Leader Management task between SideCard and SideCard2...");
 
-            while (!cancellationToken.IsCancellationRequested)
+            bool lockAcquired = await redisDb.LockTakeAsync(leaderLockKey, Environment.MachineName, TimeSpan.FromSeconds(lockExpirationSeconds));
+
+            if (lockAcquired)
             {
-                bool leaderAssigned = await CheckIfLeaderExists(logger);
-
-                if (!leaderAssigned)
+                try
                 {
-                    logger.LogInformation("No leader assigned. Attempting to promote a leader...");
+                    // Leader actuel prend la tâche et renouvelle régulièrement le verrou
+                    logger.LogInformation($"{Environment.MachineName} est le Leader et va gérer l'assignation des SideCards.");
 
-                    bool sideCard1Alive = await IsSideCardAlive("STM.SideCard", logger);
-                    bool sideCard2Alive = await IsSideCardAlive("STM2.SideCard2", logger);
+                    while (!cancellationToken.IsCancellationRequested)
+                    {
+                        // Logique pour gérer les SideCards
+                        bool leaderAssigned = await CheckIfLeaderExists(logger);
 
-                    if (!sideCard1Alive && !sideCard2Alive)
-                    {
-                        logger.LogWarning("Both SideCards are down. Cannot assign a leader.");
-                    }
-                    else
-                    {
-                        // Tentative de promotion stricte pour éviter le double leadership
-                        if (sideCard1Alive && !await CheckIfOtherSideCardIsLeader("STM2.SideCard2", logger))
+                        if (!leaderAssigned)
                         {
-                            bool promotionSucceeded = await AttemptLeaderPromotion("STM.SideCard", logger);
-                            if (promotionSucceeded)
+                            bool sideCard1Alive = await IsSideCardAlive("STM.SideCard", logger);
+                            bool sideCard2Alive = await IsSideCardAlive("STM2.SideCard2", logger);
+
+                            if (sideCard1Alive && !await CheckIfOtherSideCardIsLeader("STM2.SideCard2", logger))
                             {
-                                logger.LogInformation("STM.SideCard is now the leader.");
+                                bool promotionSucceeded = await AttemptLeaderPromotion("STM.SideCard", logger);
+                                if (promotionSucceeded)
+                                {
+                                    logger.LogInformation("STM.SideCard is now the leader.");
+                                }
+                            }
+                            else if (sideCard2Alive && !await CheckIfOtherSideCardIsLeader("STM.SideCard", logger))
+                            {
+                                bool promotionSucceeded = await AttemptLeaderPromotion("STM2.SideCard2", logger);
+                                if (promotionSucceeded)
+                                {
+                                    logger.LogInformation("STM2.SideCard2 is now the leader.");
+                                }
+                            }
+                            else
+                            {
+                                logger.LogWarning("Failed to promote any SideCard to leader.");
                             }
                         }
-                        else if (sideCard2Alive && !await CheckIfOtherSideCardIsLeader("STM.SideCard", logger))
-                        {
-                            bool promotionSucceeded = await AttemptLeaderPromotion("STM2.SideCard2", logger);
-                            if (promotionSucceeded)
-                            {
-                                logger.LogInformation("STM2.SideCard2 is now the leader.");
-                            }
-                        }
-                        else
-                        {
-                            logger.LogWarning("Failed to promote any SideCard to leader.");
-                        }
+
+                        // Rafraîchir le verrou pour signaler que l'instance est toujours active
+                        await redisDb.LockExtendAsync(leaderLockKey, Environment.MachineName, TimeSpan.FromSeconds(lockExpirationSeconds));
+
+                        // Délai avant le prochain rafraîchissement du verrou
+                        await Task.Delay(50, cancellationToken);
                     }
                 }
-                else
+                finally
                 {
-                    logger.LogInformation("A leader is already assigned.");
+                    // Libération du verrou en cas d'annulation
+                    await redisDb.LockReleaseAsync(leaderLockKey, Environment.MachineName);
                 }
 
                 await Task.Delay(50, cancellationToken); // Délai pour éviter les promotions rapides

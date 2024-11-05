@@ -105,12 +105,15 @@ services:
     environment:
       SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
       NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
       ID: ManagerSTM
       API_KEY: '${TOMTOM}'
     ports:
       - '32778:8080'
     labels:
       ARTIFACT_CATEGORY: Computation
+      REPLICAS: ManagerSTM,ManagerSTM2
 
   tripcomparator:
     container_name: TripComparator
@@ -207,7 +210,8 @@ services:
     container_name: managerSTM_redis_container
     environment:
       REDIS_ID: managerSTM_redis_container
-      REDIS_PORT: 6379
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     ports:
       - "${REDIS_PORT:-6379}:6379"  # Utilise la variable d'environnement REDIS_PORT, avec 6379 par défaut
     labels:
