@@ -68,11 +68,11 @@ public class Program
 
         var hostInfo = new HostInfo();
 
-    string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE")?? DefaultServerAdresse ;
-    int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT"));
-    string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER")?? DefaultUsername;
-    string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? DefaultPassword;
-    string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? DefaultDatabaseName;
+    string DbServerAddress = Environment.GetEnvironmentVariable("POSTGRES_SERVER_ADRESSE_2")?? DefaultServerAdresse ;
+    int DbPort = int.Parse(Environment.GetEnvironmentVariable("DB_PORT_2"));
+    string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER_2")?? DefaultUsername;
+    string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD_2") ?? DefaultPassword;
+    string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB_2") ?? DefaultDatabaseName;
     string IsLeader = Environment.GetEnvironmentVariable("IS_LEADER_2");
 
         Console.WriteLine($"Server={DbServerAddress};Port={DbPort};Username={DbUsername};Password={DbPassword};Database={DatabaseName};IsLeader={IsLeader}");

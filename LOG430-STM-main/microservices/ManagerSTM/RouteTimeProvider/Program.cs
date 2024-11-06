@@ -1,26 +1,20 @@
-using System.ComponentModel.DataAnnotations;
-using System.Threading.RateLimiting;
-using Application.Interfaces;
-using Application.Usecases;
-using Microsoft.AspNetCore.RateLimiting;
-using Newtonsoft.Json;
-using ServiceMeshHelper;
-using ServiceMeshHelper.BusinessObjects.InterServiceRequests;
-using ServiceMeshHelper.BusinessObjects;
-using ServiceMeshHelper.Controllers;
+using System;
 using System.Threading;
-using System.Diagnostics.Eventing.Reader;
-using ManagerSTM.Redis;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
+using ManagerSTM.Redis;
+using Newtonsoft.Json;
+using ServiceMeshHelper.BusinessObjects.InterServiceRequests;
+using ServiceMeshHelper.Controllers;
+using ServiceMeshHelper;
 
 namespace RouteTimeProvider
 {
     public class Program
     {
-    
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-
             // Configuration de Redis
             var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost";
             var redisPort = Environment.GetEnvironmentVariable("REDIS_PORT") ?? "6379";
@@ -29,42 +23,37 @@ namespace RouteTimeProvider
             var redisService = new RedisService(redisDb);
             redisService.TestConnection();
 
+            // Configuration de l'application ASP.NET
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-           
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
             var app = builder.Build();
 
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseHttpsRedirection();
 
-            app.UseCors(
-                options =>
-                {
-                    options.AllowAnyOrigin();
-                    options.AllowAnyHeader();
-                    options.AllowAnyMethod();
-                }
-            );
+            app.UseCors(options =>
+            {
+                options.AllowAnyOrigin();
+                options.AllowAnyHeader();
+                options.AllowAnyMethod();
+            });
 
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             var cancellationTokenSource = new CancellationTokenSource();
 
+            // Lancer la gestion du Leader
+            Task.Run(() => StartLeaderManagement(cancellationTokenSource.Token, logger, redisDb));
+
             app.UseCors();
-
             app.MapControllers();
-            Task.Run(() => StartLeaderManagement(cancellationTokenSource.Token,logger, redisDb));
             app.Run();
-
-            // Annuler le ping quand l'application se termine
             cancellationTokenSource.Cancel();
         }
 
+        // Tâche de gestion du Leader
         public static async Task StartLeaderManagement(CancellationToken cancellationToken, ILogger logger, IDatabase redisDb)
         {
             const string leaderLockKey = "ManagerLeaderLock";
@@ -72,61 +61,75 @@ namespace RouteTimeProvider
 
             logger.LogInformation("Starting continuous Leader Management task between SideCard and SideCard2...");
 
-            bool lockAcquired = await redisDb.LockTakeAsync(leaderLockKey, Environment.MachineName, TimeSpan.FromSeconds(lockExpirationSeconds));
-
-            if (lockAcquired)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                try
+                // Essayer d'acquérir le verrou Redis
+                bool lockAcquired = await redisDb.LockTakeAsync(leaderLockKey, Environment.MachineName, TimeSpan.FromSeconds(lockExpirationSeconds));
+
+                if (lockAcquired)
                 {
-                    // Leader actuel prend la tâche et renouvelle régulièrement le verrou
-                    logger.LogInformation($"{Environment.MachineName} est le Leader et va gérer l'assignation des SideCards.");
-
-                    while (!cancellationToken.IsCancellationRequested)
+                    try
                     {
-                        // Logique pour gérer les SideCards
-                        bool leaderAssigned = await CheckIfLeaderExists(logger);
+                        // Leader actuel prend la tâche et renouvelle régulièrement le verrou
+                        logger.LogInformation($"{Environment.MachineName} est le Leader et va gérer l'assignation des SideCards.");
 
-                        if (!leaderAssigned)
+                        while (!cancellationToken.IsCancellationRequested)
                         {
-                            bool sideCard1Alive = await IsSideCardAlive("STM.SideCard", logger);
-                            bool sideCard2Alive = await IsSideCardAlive("STM2.SideCard2", logger);
+                            // Logique pour gérer les SideCards
+                            bool leaderAssigned = await CheckIfLeaderExists(logger);
 
-                            if (sideCard1Alive && !await CheckIfOtherSideCardIsLeader("STM2.SideCard2", logger))
+                            if (!leaderAssigned)
                             {
-                                bool promotionSucceeded = await AttemptLeaderPromotion("STM.SideCard", logger);
-                                if (promotionSucceeded)
+                                bool sideCard1Alive = await IsSideCardAlive("STM.SideCard", logger);
+                                bool sideCard2Alive = await IsSideCardAlive("STM2.SideCard2", logger);
+
+                                if (sideCard1Alive && !await CheckIfOtherSideCardIsLeader("STM2.SideCard2", logger))
                                 {
-                                    logger.LogInformation("STM.SideCard is now the leader.");
+                                    bool promotionSucceeded = await AttemptLeaderPromotion("STM.SideCard", logger);
+                                    if (promotionSucceeded)
+                                    {
+                                        logger.LogInformation("STM.SideCard is now the leader.");
+                                    }
+                                }
+                                else if (sideCard2Alive && !await CheckIfOtherSideCardIsLeader("STM.SideCard", logger))
+                                {
+                                    bool promotionSucceeded = await AttemptLeaderPromotion("STM2.SideCard2", logger);
+                                    if (promotionSucceeded)
+                                    {
+                                        logger.LogInformation("STM2.SideCard2 is now the leader.");
+                                    }
+                                }
+                                else
+                                {
+                                    logger.LogWarning("Failed to promote any SideCard to leader.");
                                 }
                             }
-                            else if (sideCard2Alive && !await CheckIfOtherSideCardIsLeader("STM.SideCard", logger))
+
+                            // Rafraîchir le verrou pour signaler que l'instance est toujours active
+                            bool lockExtended = await redisDb.LockExtendAsync(leaderLockKey, Environment.MachineName, TimeSpan.FromSeconds(lockExpirationSeconds));
+                            if (!lockExtended)
                             {
-                                bool promotionSucceeded = await AttemptLeaderPromotion("STM2.SideCard2", logger);
-                                if (promotionSucceeded)
-                                {
-                                    logger.LogInformation("STM2.SideCard2 is now the leader.");
-                                }
+                                logger.LogWarning($"{Environment.MachineName} a perdu le verrou de leadership. Un autre instance peut maintenant devenir le Leader.");
+                                break;
                             }
-                            else
-                            {
-                                logger.LogWarning("Failed to promote any SideCard to leader.");
-                            }
+
+                            // Délai avant le prochain rafraîchissement du verrou
+                            await Task.Delay(50, cancellationToken);
                         }
-
-                        // Rafraîchir le verrou pour signaler que l'instance est toujours active
-                        await redisDb.LockExtendAsync(leaderLockKey, Environment.MachineName, TimeSpan.FromSeconds(lockExpirationSeconds));
-
-                        // Délai avant le prochain rafraîchissement du verrou
-                        await Task.Delay(50, cancellationToken);
+                    }
+                    finally
+                    {
+                        // Libération du verrou en cas d'annulation ou de perte
+                        await redisDb.LockReleaseAsync(leaderLockKey, Environment.MachineName);
                     }
                 }
-                finally
+                else
                 {
-                    // Libération du verrou en cas d'annulation
-                    await redisDb.LockReleaseAsync(leaderLockKey, Environment.MachineName);
+                    logger.LogInformation("Un autre ManagerSTM est actuellement Leader. Attente avant de réessayer...");
                 }
 
-                await Task.Delay(50, cancellationToken); // Délai pour éviter les promotions rapides
+                // Attendre avant de réessayer pour éviter une charge excessive sur Redis
+                await Task.Delay(100, cancellationToken);
             }
         }
 
@@ -134,27 +137,6 @@ namespace RouteTimeProvider
         {
             bool sideCard1IsLeader = await CheckIfOtherSideCardIsLeader("STM.SideCard", logger);
             bool sideCard2IsLeader = await CheckIfOtherSideCardIsLeader("STM2.SideCard2", logger);
-
-            /*
-            if (sideCard1IsLeader && sideCard2IsLeader)
-            {
-                // Résoudre le conflit en rétrogradant l'un des deux, ici SideCard2
-                logger.LogWarning("Conflict detected: Both SideCard1 and SideCard2 are claiming leadership. Demoting SideCard2.");
-
-                bool demotionSucceeded = await DemoteLeader("STM2.SideCard2", logger);
-
-                if (demotionSucceeded)
-                {
-                    logger.LogInformation("SideCard2 has been demoted successfully. SideCard1 remains the leader.");
-                    return true;
-                }
-                else
-                {
-                    logger.LogError("Failed to demote SideCard2. Manual intervention may be required.");
-                    return true; // Un leader est présent malgré le conflit
-                }
-            }
-            */
 
             if (sideCard1IsLeader || sideCard2IsLeader)
             {
@@ -192,37 +174,6 @@ namespace RouteTimeProvider
                 logger.LogError(ex, $"Error checking leader status for {targetService}. Error: {ex.Message}");
             }
 
-            return false;
-        }
-
-        
-        private static async Task<bool> DemoteLeader(string targetService, ILogger logger)
-        {
-            try
-            {
-                var res = await RestController.Get(
-                    new GetRoutingRequest()
-                    {
-                        TargetService = targetService,
-                        Endpoint = "SideCard/Demote",
-                        Mode = LoadBalancingMode.RoundRobin
-                    });
-
-                await foreach (var result in res!.ReadAllAsync())
-                {
-                    if (result.Content != null && result.Content == "Demotion success")
-                    {
-                        logger.LogInformation($"{targetService} has been demoted.");
-                        return true;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Error demoting {targetService}. Error: {ex.Message}");
-            }
-
-            logger.LogWarning($"Failed to demote {targetService}.");
             return false;
         }
 
@@ -265,8 +216,8 @@ namespace RouteTimeProvider
         private static async Task<bool> AttemptLeaderPromotion(string targetService, ILogger logger)
         {
             try
-            {   
-                logger.LogInformation($"Attempting to promote {targetService} to leader (Je suis capable d'etrer ici ?");
+            {
+                logger.LogInformation($"Attempting to promote {targetService} to leader.");
                 var res = await RestController.Get(
                     new GetRoutingRequest()
                     {
