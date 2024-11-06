@@ -26,15 +26,18 @@ public class StmClient : IBusInfoProvider
         _infiniteRetry = infiniteRetry;
     }
 
-    public Task<RideDto> GetBestBus(string startingCoordinates, string destinationCoordinates)
+    public async Task<RideDto> GetBestBus(string startingCoordinates, string destinationCoordinates)
     {
-        return _infiniteRetry.ExecuteAsync(async () =>
+        return await _infiniteRetry.ExecuteAsync(async () =>
         {
-            var channel = await RestController.Get(new GetRoutingRequest()
+            // Création des requêtes pour STM et STM2
+            var requests = new List<GetRoutingRequest>
+        {
+            new GetRoutingRequest
             {
-                TargetService = "STM2",
+                TargetService = "STM",
                 Endpoint = $"Finder/OptimalBuses",
-                Params = new List<NameValue>()
+                Params = new List<NameValue>
                 {
                     new()
                     {
@@ -45,25 +48,77 @@ public class StmClient : IBusInfoProvider
                     {
                         Name = "toLatitudeLongitude",
                         Value = destinationCoordinates
-                    },
+                    }
                 },
                 Mode = LoadBalancingMode.RoundRobin
+            },
+            new GetRoutingRequest
+            {
+                TargetService = "STM2",
+                Endpoint = $"Finder/OptimalBuses",
+                Params = new List<NameValue>
+                {
+                    new()
+                    {
+                        Name = "fromLatitudeLongitude",
+                        Value = startingCoordinates
+                    },
+                    new()
+                    {
+                        Name = "toLatitudeLongitude",
+                        Value = destinationCoordinates
+                    }
+
+                },
+                Mode = LoadBalancingMode.RoundRobin
+            }
+        };
+
+            RideDto? leaderBusDto = null;
+
+            // Exécuter les requêtes en parallèle en mode Round Robin
+            var tasks = requests.Select(async request =>
+            {
+                var channel = await RestController.Get(request);
+                await foreach (var res in channel.ReadAllAsync())
+                {
+                    if (res.StatusCode == HttpStatusCode.Forbidden) // Vérifie si l'instance n'est pas le Leader
+                    {
+                        // Logique pour ignorer cette réponse car l'instance n'est pas le Leader
+                        _logger.LogWarning("Ignored response from non-leader instance.");
+                        continue;
+                    }
+
+                    if (res.Content != null)
+                    {
+                        // Désérialise le contenu pour obtenir `RideDto` s'il provient du Leader
+                        var busDto = JsonConvert.DeserializeObject<RideDto>(res.Content);
+                        if (busDto != null)
+                        {
+                            return busDto; // Retourne la réponse du Leader
+                        }
+                    }
+                }
+                return null; // Retourne null si la requête échoue ou si l'instance n'est pas Leader
             });
 
-            RideDto? busDto = null;
-
-            await foreach (var res in channel.ReadAllAsync())
+            // Essaye de récupérer la première réponse valide du Leader
+            foreach (var task in tasks)
             {
-                if (res.Content is null) throw new Exception("Bus request content was null");
+                var completedTask = await Task.WhenAny(tasks); // Attend la première tâche terminée
+                leaderBusDto = await completedTask;
+                if (leaderBusDto != null)
+                {
+                    break; // Si une réponse du Leader est trouvée, sort de la boucle
+                }
 
-                busDto = JsonConvert.DeserializeObject<RideDto>(res.Content);
-
-                break;
+                // Si la tâche échoue, elle est retirée de la liste des tâches
+                tasks = tasks.Where(t => t != completedTask);
             }
 
-            if (busDto is null) throw new Exception("Bus Dto was null");
+            if (leaderBusDto == null) throw new Exception("No valid leader response received from STM or STM2");
 
-            return busDto;
+            return leaderBusDto;
         });
     }
 

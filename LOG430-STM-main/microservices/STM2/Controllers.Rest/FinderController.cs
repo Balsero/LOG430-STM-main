@@ -38,7 +38,7 @@ public class FinderController : ControllerBase
         if (isLeader != "true")
         {
             
-            _logger.LogWarning("This instance is not the leader. OptimalBuses request denied.");
+            _logger.LogWarning("This instance of STM2 is not the leader. OptimalBuses request denied.");
             return StatusCode(403, "This instance is not the leader and cannot process the request.");
         }
 

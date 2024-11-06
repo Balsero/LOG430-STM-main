@@ -116,9 +116,34 @@ services:
       REPLICAS : TripComparator
       Pod_Links : SideCard
 
-  
-
-
+  stm:
+    container_name: STM
+    image: stm
+    restart: always
+    build:
+      context: ../STM
+      dockerfile: /Configuration/Dockerfile
+    environment:
+      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
+      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
+      ID: STM
+      API_KEY: '${STM}'
+      # HIGH (3gb) > MEDIUM (1.5gb) > LOW (300mb)
+      MEMORY_CONSUMPTION: LOW
+      POSTGRES_SERVER_ADRESSE: ${POSTGRES_SERVER_ADRESSE}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DB_PORT: ${DB_PORT}
+      IS_LEADER: "false"
+    ports:
+      - '32774:8080'
+    labels:
+      Replicas : STM
+      ARTIFACT_CATEGORY: Computation
+      Pod_Links : SideCard
+      DNS : Public
+      SHARE_VOLUMES: true
 
   stm2:
     container_name: STM2
@@ -139,7 +164,7 @@ services:
       POSTGRES_PASSWORD_2: ${POSTGRES_PASSWORD}
       POSTGRES_DB_2: ${POSTGRES_DB}
       DB_PORT_2: ${DB_PORT}
-      IS_LEADER_2: "false"
+      IS_LEADER_2: "true"
     ports:
       - '32790:8080'
     labels:
