@@ -32,7 +32,7 @@ public class StmClient : IBusInfoProvider
         {
             var channel = await RestController.Get(new GetRoutingRequest()
             {
-                TargetService = "STM",
+                TargetService = "STM2",
                 Endpoint = $"Finder/OptimalBuses",
                 Params = new List<NameValue>()
                 {
@@ -73,7 +73,7 @@ public class StmClient : IBusInfoProvider
         {
             _ = await RestController.Post(new PostRoutingRequest<RideDto>()
             {
-                TargetService = "STM",
+                TargetService = "STM2",
                 Endpoint = $"Track/BeginTracking",
                 Payload = stmBus,
                 Mode = LoadBalancingMode.RoundRobin
@@ -87,7 +87,7 @@ public class StmClient : IBusInfoProvider
         {
             var channel = await RestController.Get(new GetRoutingRequest()
             {
-                TargetService = "STM",
+                TargetService = "STM2",
                 Endpoint = $"Track/GetTrackingUpdate",
                 Params = new List<NameValue>(),
                 Mode = LoadBalancingMode.RoundRobin

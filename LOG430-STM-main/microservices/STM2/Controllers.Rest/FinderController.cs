@@ -33,6 +33,15 @@ public class FinderController : ControllerBase
     [ActionName(nameof(OptimalBuses))]
     public async Task<ActionResult<RideViewModel>> OptimalBuses(string fromLatitudeLongitude, string toLatitudeLongitude)
     {
+        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_2");
+
+        if (isLeader != "true")
+        {
+            
+            _logger.LogWarning("This instance is not the leader. OptimalBuses request denied.");
+            return StatusCode(403, "This instance is not the leader and cannot process the request.");
+        }
+
         _logger.LogInformation($"OptimalBus endpoint called with coordinated: from: {fromLatitudeLongitude}; to: {toLatitudeLongitude}");
 
         var (fromLatitude, fromLongitude, toLatitude, toLongitude) = ParseParams();
