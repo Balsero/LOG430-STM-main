@@ -30,7 +30,7 @@ public class StmClient : IBusInfoProvider
     {
         return await _infiniteRetry.ExecuteAsync(async () =>
         {
-            // Création des requêtes pour STM et STM2
+            // Liste des requêtes pour STM et STM2
             var requests = new List<GetRoutingRequest>
         {
             new GetRoutingRequest
@@ -39,18 +39,9 @@ public class StmClient : IBusInfoProvider
                 Endpoint = $"Finder/OptimalBuses",
                 Params = new List<NameValue>
                 {
-                    new()
-                    {
-                        Name = "fromLatitudeLongitude",
-                        Value = startingCoordinates
-                    },
-                    new()
-                    {
-                        Name = "toLatitudeLongitude",
-                        Value = destinationCoordinates
-                    }
-                },
-                Mode = LoadBalancingMode.RoundRobin
+                    new NameValue { Name = "fromLatitudeLongitude", Value = startingCoordinates },
+                    new NameValue { Name = "toLatitudeLongitude", Value = destinationCoordinates }
+                }
             },
             new GetRoutingRequest
             {
@@ -58,69 +49,52 @@ public class StmClient : IBusInfoProvider
                 Endpoint = $"Finder/OptimalBuses",
                 Params = new List<NameValue>
                 {
-                    new()
-                    {
-                        Name = "fromLatitudeLongitude",
-                        Value = startingCoordinates
-                    },
-                    new()
-                    {
-                        Name = "toLatitudeLongitude",
-                        Value = destinationCoordinates
-                    }
-
-                },
-                Mode = LoadBalancingMode.RoundRobin
+                    new NameValue { Name = "fromLatitudeLongitude", Value = startingCoordinates },
+                    new NameValue { Name = "toLatitudeLongitude", Value = destinationCoordinates }
+                }
             }
         };
 
             RideDto? leaderBusDto = null;
 
-            // Exécuter les requêtes en parallèle en mode Round Robin
-            var tasks = requests.Select(async request =>
+            // Traite une requête à la fois
+            foreach (var request in requests)
             {
-                var channel = await RestController.Get(request);
-                await foreach (var res in channel.ReadAllAsync())
+                try
                 {
-                    if (res.StatusCode == HttpStatusCode.Forbidden) // Vérifie si l'instance n'est pas le Leader
+                    var channel = await RestController.Get(request);
+                    await foreach (var res in channel.ReadAllAsync())
                     {
-                        // Logique pour ignorer cette réponse car l'instance n'est pas le Leader
-                        _logger.LogWarning("Ignored response from non-leader instance.");
-                        continue;
-                    }
-
-                    if (res.Content != null)
-                    {
-                        // Désérialise le contenu pour obtenir `RideDto` s'il provient du Leader
-                        var busDto = JsonConvert.DeserializeObject<RideDto>(res.Content);
-                        if (busDto != null)
+                        if (res.StatusCode == HttpStatusCode.Forbidden) // Vérifie si l'instance n'est pas le Leader
                         {
-                            return busDto; // Retourne la réponse du Leader
+                            _logger.LogWarning("Ignored response from non-leader instance.");
+                            break; // Ignorer cette instance et passer à la suivante
+                        }
+
+                        if (res.Content != null)
+                        {
+                            leaderBusDto = JsonConvert.DeserializeObject<RideDto>(res.Content);
+                            if (leaderBusDto != null)
+                            {
+                                return leaderBusDto; // Retourne la première réponse valide
+                            }
                         }
                     }
                 }
-                return null; // Retourne null si la requête échoue ou si l'instance n'est pas Leader
-            });
-
-            // Essaye de récupérer la première réponse valide du Leader
-            foreach (var task in tasks)
-            {
-                var completedTask = await Task.WhenAny(tasks); // Attend la première tâche terminée
-                leaderBusDto = await completedTask;
-                if (leaderBusDto != null)
+                catch (Exception ex)
                 {
-                    break; // Si une réponse du Leader est trouvée, sort de la boucle
+                    _logger.LogError(ex, $"Error while processing request for {request.TargetService}");
+                    continue; // Si une requête échoue, passer à la suivante
                 }
-
-                // Si la tâche échoue, elle est retirée de la liste des tâches
-                tasks = tasks.Where(t => t != completedTask);
             }
 
-            if (leaderBusDto == null) throw new Exception("No valid leader response received from STM or STM2");
+            if (leaderBusDto == null)
+                throw new Exception("No valid leader response received from STM or STM2");
 
             return leaderBusDto;
         });
     }
+
 
     public Task BeginTracking(RideDto stmBus)
     {

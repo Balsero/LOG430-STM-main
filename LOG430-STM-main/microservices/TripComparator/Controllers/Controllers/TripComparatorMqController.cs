@@ -27,7 +27,8 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
     }
 
     public async Task Consume(ConsumeContext<CoordinateMessage> context)
-    {
+    {   
+        //C'est ici quil gere la reception des message de STM important pour nous
         string startingCoordinates = context.Message.StartingCoordinates, destinationCoordinates = context.Message.DestinationCoordinates;
 
         _logger.LogInformation($"Comparing trip duration from {startingCoordinates} to {destinationCoordinates}");
