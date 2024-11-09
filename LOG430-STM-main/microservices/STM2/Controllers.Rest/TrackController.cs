@@ -24,10 +24,18 @@ public class TrackController : ControllerBase
 
     [HttpPost]
     [ActionName(nameof(BeginTracking))]
-    public async Task<AcceptedResult> BeginTracking([FromBody] TrackBusCommand trackBusCommand)
+    public async Task<IActionResult> BeginTracking([FromBody] TrackBusCommand trackBusCommand)
     {
+        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_2");
+        if (isLeader != "true")
+        {
+            _logger.LogWarning("This instance of STM is not the leader. OptimalBuses request denied.");
+            return StatusCode(403, new { message = "This instance is not the leader and cannot process the request." });
+        }
+
         _logger.LogInformation("TrackBus endpoint reached");
 
+        // Dispatch the command if the instance is a Leader
         await _commandDispatcher.DispatchAsync(trackBusCommand, CancellationToken.None);
 
         return Accepted();
@@ -42,6 +50,13 @@ public class TrackController : ControllerBase
     public async Task<ActionResult<ApplicationRideTrackingUpdated>> GetTrackingUpdate()
     {
         const int timeoutInMs = 5000;
+
+        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_2");
+        if (isLeader != "true")
+        {
+            _logger.LogWarning("This instance of STM is not the leader. OptimalBuses request denied.");
+            return StatusCode(403, new { message = "This instance is not the leader and cannot process the request." });
+        }
 
         try
         {
