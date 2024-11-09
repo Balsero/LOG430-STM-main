@@ -116,6 +116,26 @@ services:
       REPLICAS : TripComparator
       Pod_Links : SideCard
 
+  tripcomparator2:
+    container_name: TripComparator2
+    image: tripcomparator2
+    restart: always
+    build:
+      context: ../TripComparator2
+      dockerfile: /Configuration/Dockerfile
+    environment:
+      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
+      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
+      IS_LEADER_TC_2: "false"
+      ID: TripComparator2
+      MQ_SERVICE_NAME: EventStream
+    ports:
+      - '32795:8080'
+    labels:
+      ARTIFACT_CATEGORY: Computation
+      REPLICAS : TripComparator2
+      Pod_Links : SideCard2
+
   stm:
     container_name: STM
     image: stm
@@ -165,6 +185,26 @@ services:
       ARTIFACT_CATEGORY: Computation
       REPLICAS: ManagerSTM,ManagerSTM2
 
+  managerTC:
+    container_name: ManagerTC
+    image: managertc
+    restart: always
+    build:
+      context: ../ManagerTC
+      dockerfile: /RouteTimeProvider/Dockerfile
+    environment:
+      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
+      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      ID: ManagerTC
+      API_KEY: '${TOMTOM}'
+    ports:
+      - '32775:8080'
+    labels:
+      ARTIFACT_CATEGORY: Computation
+      REPLICAS: ManagerTC,ManagerTC2
+
   stm2:
     container_name: STM2
     image: stm2
@@ -209,14 +249,14 @@ services:
     volumes:
       - dbstm:/var/lib/postgresql/data
 
-  managerSTM_redis:
+  bd_redis:
     image: redis:latest
-    container_name: managerSTM_redis_container
+    container_name: BD_Redis
     environment:
       REDIS_ID: managerSTM_redis_container
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
-      ID: managerSTM_redis_container
+      ID: BD_Redis
     ports:
       - "${REDIS_PORT:-6379}:6379"  # Utilise la variable d'environnement REDIS_PORT, avec 6379 par défaut
     labels:

@@ -96,59 +96,17 @@ public class StmClient : IBusInfoProvider
     }
 
 
-    public async Task BeginTracking(RideDto stmBus)
+    public Task BeginTracking(RideDto stmBus)
     {
-        await _infiniteRetry.ExecuteAsync(async () =>
+        return _infiniteRetry.ExecuteAsync(async () =>
         {
-            // Liste des requêtes pour STM et STM2
-            var requests = new List<PostRoutingRequest<RideDto>>
-        {
-            new PostRoutingRequest<RideDto>
-            {
-                TargetService = "STM",
-                Endpoint = $"Track/BeginTracking",
-                Payload = stmBus,
-                Mode = LoadBalancingMode.RoundRobin
-            },
-            new PostRoutingRequest<RideDto>
+            _ = await RestController.Post(new PostRoutingRequest<RideDto>()
             {
                 TargetService = "STM2",
                 Endpoint = $"Track/BeginTracking",
                 Payload = stmBus,
                 Mode = LoadBalancingMode.RoundRobin
-            }
-        };
-
-            foreach (var request in requests)
-            {
-                try
-                {
-                    // Envoyer la requête POST à l'instance et lire la réponse
-                    var channel = await RestController.Post(request);
-
-                    await foreach (var res in channel.ReadAllAsync())
-                    {
-                        // Vérifier si la réponse contient un message de non-Leader
-                        if (res.StatusCode == HttpStatusCode.Forbidden) // Vérifie le code de statut
-                        {
-                            _logger.LogWarning($"Tracking rejected by non-leader instance {request.TargetService}.");
-                            continue; // Passer à l'autre instance
-                        }
-
-                        // Log succès
-                        _logger.LogInformation($"Tracking started successfully on {request.TargetService}.");
-                        return; // Succès, arrêter la méthode
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error while trying to start tracking on {request.TargetService}");
-                    continue; // Passer à l'autre instance en cas d'erreur
-                }
-            }
-
-            // Si aucune requête n'a réussi
-            throw new Exception("Tracking could not be started on either STM or STM2");
+            });
         });
     }
 
@@ -156,63 +114,29 @@ public class StmClient : IBusInfoProvider
     {
         return _infiniteRetry.ExecuteAsync<IBusTracking?>(async () =>
         {
-            // Liste des requêtes pour STM et STM2
-            var requests = new List<GetRoutingRequest>
-        {
-            new GetRoutingRequest
-            {
-                TargetService = "STM",
-                Endpoint = $"Track/GetTrackingUpdate",
-                Params = new List<NameValue>(),
-                Mode = LoadBalancingMode.RoundRobin
-            },
-            new GetRoutingRequest
+            var channel = await RestController.Get(new GetRoutingRequest()
             {
                 TargetService = "STM2",
                 Endpoint = $"Track/GetTrackingUpdate",
                 Params = new List<NameValue>(),
                 Mode = LoadBalancingMode.RoundRobin
-            }
-        };
+            });
 
-            RestResponse? validData = null;
+            RestResponse? data = null;
 
-            foreach (var request in requests)
+            await foreach (var res in channel.ReadAllAsync())
             {
-                try
-                {
-                    var channel = await RestController.Get(request);
-                    await foreach (var res in channel.ReadAllAsync())
-                    {
-                        if (res.StatusCode == HttpStatusCode.Forbidden) // Vérifie si l'instance n'est pas Leader
-                        {
-                            _logger.LogWarning($"Request rejected by non-leader instance {request.TargetService}.");
-                            continue; // Passer à l'autre instance
-                        }
+                data = res;
 
-                        // Si la réponse est valide, la traiter
-                        if (res != null && res.IsSuccessStatusCode && !res.StatusCode.Equals(HttpStatusCode.NoContent))
-                        {
-                            validData = res;
-                            break; // Sortir dès qu'une réponse valide est trouvée
-                        }
-                    }
-
-                    if (validData != null)
-                        break; // Stopper la boucle dès qu'une réponse valide est trouvée
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error while processing GetTrackingUpdate for {request.TargetService}");
-                    continue; // Passer à l'autre instance en cas d'erreur
-                }
+                break;
             }
 
-            if (validData == null) return null; // Si aucune réponse valide n'a été trouvée
+            if (data is null || !data.IsSuccessStatusCode || data.StatusCode.Equals(HttpStatusCode.NoContent)) return null;
 
-            // Désérialiser la réponse en objet IBusTracking
-            var busTracking = JsonConvert.DeserializeObject<BusTracking>(validData.Content!);
+            var busTracking = JsonConvert.DeserializeObject<BusTracking>(data.Content!);
+
             return busTracking;
+
         });
     }
 }
