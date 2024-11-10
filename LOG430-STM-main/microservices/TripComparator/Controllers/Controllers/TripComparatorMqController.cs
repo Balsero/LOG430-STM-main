@@ -3,6 +3,10 @@ using Application.Usecases;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using MqContracts;
+using StackExchange.Redis;
+
+
+
 
 namespace Controllers.Controllers;
 
@@ -27,20 +31,57 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
     }
 
     public async Task Consume(ConsumeContext<CoordinateMessage> context)
-    {   
-        //C'est ici quil gere la reception des message de STM important pour nous
-        string startingCoordinates = context.Message.StartingCoordinates, destinationCoordinates = context.Message.DestinationCoordinates;
+    {
+        
+            string startingCoordinates = context.Message.StartingCoordinates;
+            string destinationCoordinates = context.Message.DestinationCoordinates;
 
-        _logger.LogInformation($"Comparing trip duration from {startingCoordinates} to {destinationCoordinates}");
+          _logger.LogInformation($"Comparing trip duration from {startingCoordinates} to {destinationCoordinates}");
 
-        var producer = await _infiniteRetryPolicy.ExecuteAsync(async () => await _compareTimes.BeginComparingBusAndCarTime(
-            RemoveWhiteSpaces(startingCoordinates),
-            RemoveWhiteSpaces(destinationCoordinates)));
+        startingCoordinates = RemoveWhiteSpaces(startingCoordinates);
+            destinationCoordinates = RemoveWhiteSpaces(destinationCoordinates);
 
-        _ = _infiniteRetryPolicy.ExecuteAsync(async () => await _compareTimes.PollTrackingUpdate(producer!.Writer));
+        try
+        {
 
-        _ = _backOffRetryPolicy.ExecuteAsync(async () => await _compareTimes.WriteToStream(producer.Reader));
+            // Sauvegarder les coordonnées dans Redis
+            string startingKey = "TripComparator:StartingCoordinates";
+            string destinationKey = "TripComparatorDestinationCoordinates";
 
-        string RemoveWhiteSpaces(string s) => s.Replace(" ", "");
+            var redisDb = RedisConnectionController.GetDatabase();
+            RedisConnectionController.TestConnection();
+
+            await redisDb.StringSetAsync(startingKey, startingCoordinates);
+            await redisDb.StringSetAsync(destinationKey, destinationCoordinates);
+
+            // Lire les coordonnées pour validation
+            var storedStartingCoordinates = await redisDb.StringGetAsync(startingKey);
+            var storedDestinationCoordinates = await redisDb.StringGetAsync(destinationKey);
+
+            if (!storedStartingCoordinates.HasValue || !storedDestinationCoordinates.HasValue)
+            {
+                throw new Exception("Failed to save or retrieve coordinates from Redis.");
+            }
+
+            // Exécuter les fonctions principales
+            var producer = await _compareTimes.BeginComparingBusAndCarTime(
+                storedStartingCoordinates.ToString(),
+                storedDestinationCoordinates.ToString()
+            );
+
+            _ = _infiniteRetryPolicy.ExecuteAsync(async () =>
+                await _compareTimes.PollTrackingUpdate(producer.Writer)
+            );
+
+            _ = _backOffRetryPolicy.ExecuteAsync(async () =>
+                await _compareTimes.WriteToStream(producer.Reader)
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while consuming CoordinateMessage.");
+            throw;
+        }
     }
+    private string RemoveWhiteSpaces(string s) => s.Replace(" ", "");
 }

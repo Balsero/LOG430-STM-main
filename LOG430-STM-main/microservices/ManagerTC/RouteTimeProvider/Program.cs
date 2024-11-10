@@ -57,6 +57,7 @@ namespace RouteTimeProvider
         public static async Task StartLeaderManagement(CancellationToken cancellationToken, ILogger logger, IDatabase redisDb)
         {
             const string leaderLockKey = "ManagerTCLeaderLock";
+            // Durée de vie du verrou en secondes songez changer cette valeur
             const int lockExpirationSeconds = 5;
 
             logger.LogInformation("Starting continuous Leader Management task between SideCard and SideCard2...");

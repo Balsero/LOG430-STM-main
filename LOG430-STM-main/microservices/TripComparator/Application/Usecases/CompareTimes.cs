@@ -3,6 +3,8 @@ using Application.BusinessObjects;
 using Application.DTO;
 using Application.Interfaces;
 
+
+
 namespace Application.Usecases
 {
     public class CompareTimes
@@ -85,6 +87,18 @@ namespace Application.Usecases
             {
                 await _dataStreamWriteModel.Produce(busPositionUpdated);
             }
+        }
+
+        public async Task SaveStateAsync(string key, string state)
+        {
+            var redisDb = RedisConnectionManager.GetDatabase();
+            await redisDb.StringSetAsync(key, state);
+        }
+
+        public async Task<string?> GetStateAsync(string key)
+        {
+            var redisDb = RedisConnectionManager.GetDatabase();
+            return await redisDb.StringGetAsync(key);
         }
     }
 }
