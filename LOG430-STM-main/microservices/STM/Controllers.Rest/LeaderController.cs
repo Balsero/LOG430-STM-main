@@ -35,9 +35,7 @@ public class LeaderController : ControllerBase
         else
         {
             return Problem("NotLeader");
-        }
-
-        
+        }  
     }
 
     [HttpGet]
@@ -51,7 +49,7 @@ public class LeaderController : ControllerBase
         
         return Ok("Promotion to Leader success");
     }
-
+    
     [HttpGet]
     [ActionName(nameof(Demote))]
     [EnableRateLimiting("fixed")]

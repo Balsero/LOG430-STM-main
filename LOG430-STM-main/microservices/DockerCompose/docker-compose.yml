@@ -16,7 +16,7 @@ services:
       SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
       NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
       MQ_SERVICE_NAME: EventStream
-      CUSTOM_CONTAINER_PORTS_DISCOVERY: 5672,5432,80
+      CUSTOM_CONTAINER_PORTS_DISCOVERY: 5672,5432,80,6379
       BRIDGE_PORT: 32674
       # Trace > Information > Error
       Logging__LogLevel__Default: Information
@@ -106,7 +106,7 @@ services:
     environment:
       SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
       NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
-      IS_LEADER_TC: "true"
+      IS_LEADER_TC: "false"
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       ID: TripComparator
@@ -117,6 +117,28 @@ services:
       ARTIFACT_CATEGORY: Computation
       REPLICAS : TripComparator
       Pod_Links : SideCard
+  
+  tripcomparator2:
+    container_name: TripComparator2
+    image: tripcomparator2
+    restart: always
+    build:
+      context: ../TripComparator2
+      dockerfile: /Configuration/Dockerfile
+    environment:
+      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
+      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
+      IS_LEADER_TC_2: "false"
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      ID: TripComparator2
+      MQ_SERVICE_NAME: EventStream
+    ports:
+      - '32788:8080'
+    labels:
+      ARTIFACT_CATEGORY: Computation
+      REPLICAS : TripComparator2
+      Pod_Links : SideCard2
 
   
 

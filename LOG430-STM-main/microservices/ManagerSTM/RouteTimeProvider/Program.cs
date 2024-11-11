@@ -57,7 +57,7 @@ namespace RouteTimeProvider
         public static async Task StartLeaderManagement(CancellationToken cancellationToken, ILogger logger, IDatabase redisDb)
         {
             const string leaderLockKey = "ManagerLeaderLock";
-            const int lockExpirationSeconds = 5;
+            const int lockExpirationSeconds = 2;
 
             logger.LogInformation("Starting continuous Leader Management task between SideCard and SideCard2...");
 
@@ -114,13 +114,13 @@ namespace RouteTimeProvider
                             }
 
                             // Délai avant le prochain rafraîchissement du verrou
-                            await Task.Delay(50, cancellationToken);
+                            await Task.Delay(20, cancellationToken);
                         }
                     }
-                    finally
+                    catch (Exception ex)
                     {
-                        // Libération du verrou en cas d'annulation ou de perte
-                        await redisDb.LockReleaseAsync(leaderLockKey, Environment.MachineName);
+                        logger.LogError(ex, "Erreur lors de l'extension ou de la libération du verrou.");
+                        await redisDb.LockReleaseAsync(leaderLockKey, Environment.MachineName); // Libération propre
                     }
                 }
                 else

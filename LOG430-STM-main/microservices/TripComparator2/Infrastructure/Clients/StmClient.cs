@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Application;
 using Application.BusinessObjects;
 using Application.DTO;
 using Application.Interfaces;
@@ -28,6 +29,8 @@ public class StmClient : IBusInfoProvider
 
     public async Task<RideDto> GetBestBus(string startingCoordinates, string destinationCoordinates)
     {
+        var redisDb = RedisConnectionManager.GetDatabase();
+
         return await _infiniteRetry.ExecuteAsync(async () =>
         {
             // Liste des requêtes pour STM et STM2
@@ -91,6 +94,7 @@ public class StmClient : IBusInfoProvider
             if (leaderBusDto == null)
                 throw new Exception("No valid leader response received from STM or STM2");
 
+            await redisDb.StringSetAsync("TripComparator:CurrentState", "GetBestBus");
             return leaderBusDto;
         });
     }
@@ -98,6 +102,8 @@ public class StmClient : IBusInfoProvider
 
     public async Task BeginTracking(RideDto stmBus)
     {
+        var redisDb = RedisConnectionManager.GetDatabase();
+
         await _infiniteRetry.ExecuteAsync(async () =>
         {
             // Liste des requêtes pour STM et STM2
@@ -137,6 +143,8 @@ public class StmClient : IBusInfoProvider
 
                         // Log succès
                         _logger.LogInformation($"Tracking started successfully on {request.TargetService}.");
+                        await redisDb.StringSetAsync("TripComparator:CurrentState", "BeginTracking");
+
                         return; // Succès, arrêter la méthode
                     }
                 }
@@ -154,6 +162,9 @@ public class StmClient : IBusInfoProvider
 
     public Task<IBusTracking?> GetTrackingUpdate()
     {
+        var redisDb = RedisConnectionManager.GetDatabase();
+        
+
         return _infiniteRetry.ExecuteAsync<IBusTracking?>(async () =>
         {
             // Liste des requêtes pour STM et STM2
@@ -212,6 +223,9 @@ public class StmClient : IBusInfoProvider
 
             // Désérialiser la réponse en objet IBusTracking
             var busTracking = JsonConvert.DeserializeObject<BusTracking>(validData.Content!);
+
+
+            await redisDb.StringSetAsync("TripComparator:CurrentState", "TrackingComplete");
             return busTracking;
         });
     }

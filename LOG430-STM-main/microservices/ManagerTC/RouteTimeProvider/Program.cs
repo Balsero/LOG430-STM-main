@@ -58,7 +58,7 @@ namespace RouteTimeProvider
         {
             const string leaderLockKey = "ManagerTCLeaderLock";
             // Durée de vie du verrou en secondes songez changer cette valeur
-            const int lockExpirationSeconds = 5;
+            const int lockExpirationSeconds = 2;
 
             logger.LogInformation("Starting continuous Leader Management task between SideCard and SideCard2...");
 
