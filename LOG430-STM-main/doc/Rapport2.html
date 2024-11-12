@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Laboratoire &num;2</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h1 id="laboratoire-2">Laboratoire #2</h1>
+<p>Groupe: 2
+Equipe: 04</p>
+<p>Membres de l'équipe:
+Jonathan Rodriguez Tames</p>
+<h2 id="évaluation-de-la-participation">Évaluation de la participation</h2>
+<blockquote>
+<p>L'évaluation suivante est faite afin d'encourager des discussions au sein de l'équipe. Une discussion saine du travail de chacun est utile afin d'améliorer le climat de travail. Les membres de l'équipe ont le droit de retirer le nom d'un ou une collègue du rapport.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">nom de l'étudiant</th>
+<th style="text-align:center">Facteur multiplicatif</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Jean Travaillant</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Joe Paresseux</td>
+<td style="text-align:center">0.75</td>
+</tr>
+<tr>
+<td style="text-align:center">Jules Procrastinateu</td>
+<td style="text-align:center">0.5</td>
+</tr>
+<tr>
+<td style="text-align:center">Jeanne Parasite</td>
+<td style="text-align:center">0.25</td>
+</tr>
+<tr>
+<td style="text-align:center">Jay Oublié</td>
+<td style="text-align:center">0</td>
+</tr>
+</tbody>
+</table>
+<h2 id="introduction">Introduction</h2>
+<blockquote>
+<p>TODO: insérer votre introduction</p>
+</blockquote>
+<h2 id="vues-architecturales">Vues architecturales</h2>
+<ul>
+<li>Au travers des différentes vues architecturales, montrez comment la redondance est présente dans vos microservices après l'implémentation du laboratoire 2. La présence des vues primaires et des catalogues d'éléments est nécessaire. Assurez-vous de bien présenter la tactique de redondance dans vos vues.</li>
+</ul>
+<h3 id="vues-architecturales-de-type-module---redondance">Vues architecturales de type module - redondance</h3>
+<h3 id="vues-architecturales-de-type-composant-et-connecteur---redondance">Vues architecturales de type composant et connecteur - redondance</h3>
+<h3 id="vues-architecturales-de-type-allocation---redondance">Vues architecturales de type allocation - redondance</h3>
+<blockquote>
+<p>Note : Une légende est nécessaire dans les vues primaires pour assurer une compréhension claire des éléments représentés.</p>
+</blockquote>
+<h2 id="alternatives-envisagées">Alternatives envisagées</h2>
+<p>Dans cette expérience, nous avions le choix d’implémenter deux types de redondances différentes pour TripComparator : soit une redondance passive pour l'assignation du Leader, soit une redondance active pour l’envoi des messages de chaque TripComparator. Dans tous les cas, chaque implémentation avait ses particularités, ses avantages et ses inconvénients, que nous présenterons ici. Par la suite, nous expliquerons pourquoi nous avons choisi une approche plutôt qu’une autre.</p>
+<p>Redondance Passive
+La redondance passive pour le TripComparator présente certaines particularités. Tout d’abord, il n’y a qu’un seul TripComparator Leader qui construit le message à envoyer à RabbitMQ. Pendant ce temps, l’autre instance reste en veille (stand-by) jusqu’à ce que le Leader cesse de fonctionner. À ce moment-là, l’instance en veille prend la relève.</p>
+<p>Pour permettre ce fonctionnement, nous avons implémenté un service Manager, dont le rôle principal est de surveiller en permanence l’état des deux instances de TripComparator. Le Manager doit également s’assurer qu’il n’y a qu’un seul Leader actif à tout moment, car plusieurs Leaders pourraient entraîner des messages dupliqués dans l’affichage.</p>
+<p>De plus, comme une instance doit reprendre l’exécution après la défaillance d’un Leader, il est crucial que le nouveau Leader sache où en est le système dans l’exécution des tâches. Pour cela, nous avons intégré une base de données Redis. Redis stocke les informations initiales de l’expérience ainsi que l’état du système en fonction des tâches accomplies. Ainsi, le nouveau Leader peut reprendre précisément là où s’était arrêté son prédécesseur, évitant les répétitions de tâches qui pourraient provoquer des erreurs dans les messages affichés.</p>
+<p>Redondance Active
+En ce qui concerne la redondance active, cette approche présente des particularités distinctes. Dans ce mode, les deux instances de TripComparator envoient simultanément des messages à RabbitMQ. Cela nécessite un filtre pour sélectionner un seul message à afficher sur le tableau de bord.</p>
+<p>Cependant, chaque instance effectue des requêtes en continu auprès du STM, rendant le filtrage plus complexe. Bien que nous ayons envisagé d’implémenter un filtre pour nettoyer les messages, nous avons finalement abandonné cette solution. La principale raison était notre compréhension insuffisante du processus d’acheminement des messages vers RabbitMQ et des mécanismes nécessaires pour concevoir un filtre efficace.</p>
+<p>Décision Finale
+Nous avons finalement opté pour la redondance passive, car cette approche avait déjà été implémentée pour le service STM. Cela nous a permis de réutiliser les SideCars existants pour communiquer avec le Manager concernant l’état du service STM, ce qui nous a fait gagner un temps précieux.</p>
+<p>De plus, nous avons pu capitaliser sur nos connaissances de Redis pour stocker les données essentielles au bon déroulement de l’expérience. Cette solution s’est avérée plus rapide à mettre en œuvre et mieux adaptée à notre contexte technique, tout en évitant les complexités liées à la redondance active.
+Alex — 10/11/2024 23:40
+L'interopérabilité est la capacité de différents systèmes, applications ou services à communiquer, échanger des données et travailler ensemble de manière efficace, même s'ils sont construits sur des technologies ou des plateformes différentes. Dans le contexte des microservices, cela signifie que chaque service doit pouvoir interagir avec d'autres services, peu importe la manière dont ils sont développés, déployés ou structurés, tout en garantissant une intégration fluide et cohérente.</p>
+<h2 id="diagrammes-de-séquence-pour-expliquer-le-fonctionnement-des-tactiques-de-redondance">Diagrammes de séquence pour expliquer le fonctionnement des tactiques de redondance</h2>
+<ul>
+<li>Vous devez fournir les diagrammes de séquence démontrant le fonctionnement de l'architecture avant le début du laboratoire 2.</li>
+<li>Vous devez fournir les diagrammes de séquence démontrant le fonctionnement après la réalisation du laboratoire 2.</li>
+<li>Représentez les différents moments de vie du système, si applicables:
+<ul>
+<li>L'état au démarrage des conteneurs,</li>
+<li>La mécanique de détection d'un problème,</li>
+<li>La mécanique de rétablissement du service, de récupération ou de reconfiguration.</li>
+</ul>
+</li>
+</ul>
+<h2 id="questions">Questions</h2>
+<ul>
+<li>
+<p><strong>Question 1</strong> Discuter de l'interopérabilité des microservices, tout en fournissant des exemples d'une ou plusieurs tactiques utilisées. Si vous pensez qu'aucune tactique n'est utilisée dans le code, nommez et décrivez une ou plusieurs tactiques qui pourraient être utilisées.</p>
+</li>
+<li>
+<p><strong>Question 2</strong> Qu'est-ce que l'injection de dépendance? Fournissez des exemples de l'utilisation de l'injection de dépendance dans un des microservices du projet. Comment l'injection de dépendance améliore-t-elle la testabilité du système?</p>
+</li>
+<li>
+<p><strong>Question 3</strong> : Dans le laboratoire, nous utilisons une technologie semblable à Kubernetes. Qu'est-ce que Kubernetes et en quoi cette technologie est-elle pertinente à la redondance ? Quels sont les éléments et les concepts de Kubernetes qui sont présents dans le projet du laboratoire ?</p>
+</li>
+</ul>
+<h1 id="conclusion">Conclusion</h1>
+<blockquote>
+<p>TODO: insérer votre conclusion</p>
+</blockquote>
+<ul>
+<li>N'oubliez pas d'effacer les TODO.</li>
+<li>Générer une version PDF de ce document pour votre remise finale.</li>
+<li>Assurez-vous du bon format de votre rapport PDF.</li>
+<li>Créer un tag git avec la commande &quot;git tag laboratoire-2&quot;.</li>
+</ul>
+<p>\newpage</p>
+<h1 id="annexes">Annexes</h1>
+
+            
+            
+        </body>
+        </html>
