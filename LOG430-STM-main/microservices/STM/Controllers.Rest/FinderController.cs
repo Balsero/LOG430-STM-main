@@ -33,6 +33,14 @@ public class FinderController : ControllerBase
     [ActionName(nameof(OptimalBuses))]
     public async Task<ActionResult<RideViewModel>> OptimalBuses(string fromLatitudeLongitude, string toLatitudeLongitude)
     {
+        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER");
+
+        if (isLeader != "true")
+        {
+            _logger.LogWarning("This instance of STM is not the leader. OptimalBuses request denied.");
+            return StatusCode(403, "This instance is not the leader and cannot process the request.");
+        }
+
         _logger.LogInformation($"OptimalBus endpoint called with coordinated: from: {fromLatitudeLongitude}; to: {toLatitudeLongitude}");
 
         var (fromLatitude, fromLongitude, toLatitude, toLongitude) = ParseParams();
@@ -56,14 +64,5 @@ public class FinderController : ControllerBase
 
             return (formattedFromLat, formattedFromLon, formattedToLat, formattedToLon);
         }
-    }
-
-    [HttpGet]
-    [ActionName(nameof(isAlive))]
-    [EnableRateLimiting("fixed")]
-    public async Task<ActionResult<string>> isAlive()
-    {
-
-        return Ok("isAlive");
     }
 }

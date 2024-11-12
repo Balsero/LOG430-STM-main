@@ -73,8 +73,9 @@ public class Program
     string DbUsername = Environment.GetEnvironmentVariable("POSTGRES_USER")?? DefaultUsername;
     string DbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? DefaultPassword;
     string DatabaseName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? DefaultDatabaseName;
+    string IsLeader = Environment.GetEnvironmentVariable("IS_LEADER");
 
-    Console.WriteLine($"Server={DbServerAddress};Port={DbPort};Username={DbUsername};Password={DbPassword};Database={DatabaseName};");
+        Console.WriteLine($"Server={DbServerAddress};Port={DbPort};Username={DbUsername};Password={DbPassword};Database={DatabaseName};IsLeader={IsLeader}");
 
         hostInfo.Validate();
 

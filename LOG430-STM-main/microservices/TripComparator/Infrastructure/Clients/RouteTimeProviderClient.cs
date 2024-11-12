@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application;
+using Application.Interfaces;
 using Application.Interfaces.Policies;
 using Newtonsoft.Json;
 using ServiceMeshHelper;
@@ -18,7 +19,9 @@ public class RouteTimeProviderClient : IRouteTimeProvider
     }
     
     public Task<int> GetTravelTimeInSeconds(string startingCoordinates, string destinationCoordinates)
-    {
+    {   
+        var redisDb = RedisConnectionManager.GetDatabase();
+        
         return _infiniteRetry.ExecuteAsync(async () =>
         {
             var res = await RestController.Get(new GetRoutingRequest()
@@ -48,6 +51,7 @@ public class RouteTimeProviderClient : IRouteTimeProvider
                 times.Add(JsonConvert.DeserializeObject<int>(result.Content));
             }
 
+            await redisDb.StringSetAsync("TripComparator:CurrentState", "GetTravelTimeInSeconds");
             return (int)times.Average();
         });
     }
