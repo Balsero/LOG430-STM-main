@@ -5,20 +5,29 @@ Equipe: 04
 
 Membres de l'équipe:
 Jonathan Rodriguez Tames 
+Ali Dickens Augustin
+Jean-Philippe Lalonde
+Alexandre Roy
 
 ## Évaluation de la participation
 
 >L'évaluation suivante est faite afin d'encourager des discussions au sein de l'équipe. Une discussion saine du travail de chacun est utile afin d'améliorer le climat de travail. Les membres de l'équipe ont le droit de retirer le nom d'un ou une collègue du rapport.
 
-| nom de l'étudiant        | Facteur multiplicatif|
-|:--------------------:    |:--------------------:|
-| Jean Travaillant         |          1           |
-| Joe Paresseux            |        0.75          |
-| Jules Procrastinateu     |        0.5           |
-| Jeanne Parasite          |        0.25          |
-| Jay Oublié               |          0           |
+|	 nom de l'étudiant    | Facteur multiplicatif |
+|	:--------------------:	  |:--------------------:|
+| Jonathan Rodriguez Tames    |           1          |
+| Ali Dickens Augustin        |			  1          |
+| Jean-Philippe Lalonde		  |			  1          |
+| Alexandre Roy			      |			  1          |
 
 ## Introduction
+
+Dans le cadre de ce laboratoire, il nous est demandé de mettre plus en pratique les techniques et la matière 
+dans le cadre de l'implementation des principes architecturaux.Pour ce faire, nous serons tenu d'implémneter un principe de
+redondance de nos microservices. Nous allons dans ce rapport expliquer nos choix de conceptions en les  présentant au travers
+des diagrammes de sequences et de vues architecturales de trois types. Par la suite, nous parlerons des alternatives de 
+conceptions envisagés et nous répondrons a des questions sur les technologies et nos choix.
+
 
 >TODO: insérer votre introduction
 
@@ -28,7 +37,9 @@ Jonathan Rodriguez Tames
 
 ### Vues architecturales de type module - redondance
 
+
 ### Vues architecturales de type composant et connecteur - redondance
+
 
 ### Vues architecturales de type allocation - redondance
 
