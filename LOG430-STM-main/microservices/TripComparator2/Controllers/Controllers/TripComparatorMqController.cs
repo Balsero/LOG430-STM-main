@@ -32,7 +32,7 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
 
     public async Task Consume(ConsumeContext<CoordinateMessage> context)
     {
-        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_TC");
+        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_TC_2");
         if (isLeader != "true")
         {
             _logger.LogInformation("Not a leader, can't execute Consume().");
@@ -104,7 +104,7 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
 
     public async Task ProcessInLoop(CancellationToken cancellationToken)
     {
-        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_TC");
+        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_TC_2");
         if (isLeader != "true")
         {
             _logger.LogInformation("Not a leader, skipping ProcessInLoop.");

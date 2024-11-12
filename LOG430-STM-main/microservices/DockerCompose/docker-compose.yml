@@ -16,7 +16,7 @@ services:
       SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
       NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
       MQ_SERVICE_NAME: EventStream
-      CUSTOM_CONTAINER_PORTS_DISCOVERY: 5672,5432,80,6379
+      CUSTOM_CONTAINER_PORTS_DISCOVERY: 5672,5432,8080,6379
       BRIDGE_PORT: 32674
       # Trace > Information > Error
       Logging__LogLevel__Default: Information
@@ -61,41 +61,6 @@ services:
       ARTIFACT_CATEGORY: Computation
       Replicas: RouteTimeProvider,RouteTimeProvider2
 
-  sideCard:
-    container_name: SideCard
-    image: sidecard
-    restart: always
-    build:
-      context: ../SideCard
-      dockerfile: /RouteTimeProvider/Dockerfile
-    environment:
-      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
-      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
-      ID: SideCard
-      API_KEY: '${TOMTOM}'
-    ports:
-      - '32776:8080'
-    labels:
-      ARTIFACT_CATEGORY: Computation
-
-  sideCard2:
-    container_name: SideCard2
-    image: sidecard2
-    restart: always
-    build:
-      context: ../SideCard2
-      dockerfile: /RouteTimeProvider/Dockerfile
-    environment:
-      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
-      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
-      ID: SideCard2
-      API_KEY: '${TOMTOM}'
-    ports:
-      - '32780:8080'
-    labels:
-      ARTIFACT_CATEGORY: Computation
-
-
   tripcomparator:
     container_name: TripComparator
     image: tripcomparator
@@ -116,7 +81,6 @@ services:
     labels:
       ARTIFACT_CATEGORY: Computation
       REPLICAS : TripComparator
-      Pod_Links : SideCard
   
   tripcomparator2:
     container_name: TripComparator2
@@ -138,9 +102,6 @@ services:
     labels:
       ARTIFACT_CATEGORY: Computation
       REPLICAS : TripComparator2
-      Pod_Links : SideCard2
-
-  
 
   stm:
     container_name: STM
@@ -167,9 +128,6 @@ services:
     labels:
       Replicas : STM
       ARTIFACT_CATEGORY: Computation
-      Pod_Links : SideCard
-      DNS : Public
-      SHARE_VOLUMES: true
   
   managerSTM:
     container_name: ManagerSTM
@@ -236,8 +194,6 @@ services:
     labels:
       Replicas : STM2
       ARTIFACT_CATEGORY: Computation
-      Pod_Links : SideCard2
-      DNS : Public
   
   stm_basededonnee:
     image: postgres:latest

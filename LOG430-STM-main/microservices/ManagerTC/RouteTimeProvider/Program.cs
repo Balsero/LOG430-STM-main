@@ -60,7 +60,7 @@ namespace RouteTimeProvider
             // Durée de vie du verrou en secondes songez changer cette valeur
             const int lockExpirationSeconds = 2;
 
-            logger.LogInformation("Starting continuous Leader Management task between SideCard and SideCard2...");
+            logger.LogInformation("Starting continuous Leader Management task between TripComparator and TripComparator2");
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -72,37 +72,37 @@ namespace RouteTimeProvider
                     try
                     {
                         // Leader actuel prend la tâche et renouvelle régulièrement le verrou
-                        logger.LogInformation($"{Environment.MachineName} est le Leader et va gérer l'assignation des SideCards.");
+                        logger.LogInformation($"{Environment.MachineName} est le Leader et va gérer l'assignation des TripComparator.");
 
                         while (!cancellationToken.IsCancellationRequested)
                         {
-                            // Logique pour gérer les SideCards
+                            // Logique pour gérer les TripComparator
                             bool leaderAssigned = await CheckIfLeaderExists(logger);
 
                             if (!leaderAssigned)
                             {
-                                bool sideCard1Alive = await IsSideCardAlive("TripComparator.SideCard", logger);
-                                bool sideCard2Alive = await IsSideCardAlive("TripComparator2.SideCard2", logger);
+                                bool tripComparatorAlive = await IsTripComparatorAlive("TripComparator", logger);
+                                bool tripComparator2Alive = await IsTripComparatorAlive("TripComparator2", logger);
 
-                                if (sideCard1Alive && !await CheckIfOtherSideCardIsLeader("TripComparator2.SideCard2", logger))
+                                if (tripComparatorAlive && !await CheckIfOtherTripComparatorIsLeader("TripComparator2", logger))
                                 {
-                                    bool promotionSucceeded = await AttemptLeaderPromotion("TripComparator.SideCard", logger);
+                                    bool promotionSucceeded = await AttemptLeaderPromotion("TripComparator", logger);
                                     if (promotionSucceeded)
                                     {
-                                        logger.LogInformation("TripComparator.SideCard is now the leader.");
+                                        logger.LogInformation("TripComparator is now the leader.");
                                     }
                                 }
-                                else if (sideCard2Alive && !await CheckIfOtherSideCardIsLeader("TripComparator.SideCard", logger))
+                                else if (tripComparator2Alive && !await CheckIfOtherTripComparatorIsLeader("TripComparator", logger))
                                 {
-                                    bool promotionSucceeded = await AttemptLeaderPromotion("TripComparator2.SideCard2", logger);
+                                    bool promotionSucceeded = await AttemptLeaderPromotion("TripComparator2", logger);
                                     if (promotionSucceeded)
                                     {
-                                        logger.LogInformation("TripComparator2.SideCard2 is now the leader.");
+                                        logger.LogInformation("TripComparator2 is now the leader.");
                                     }
                                 }
                                 else
                                 {
-                                    logger.LogWarning("Failed to promote any SideCard to leader.");
+                                    logger.LogWarning("Failed to promote any TripComparator to leader.");
                                 }
                             }
 
@@ -136,10 +136,10 @@ namespace RouteTimeProvider
 
         private static async Task<bool> CheckIfLeaderExists(ILogger logger)
         {
-            bool sideCard1IsLeader = await CheckIfOtherSideCardIsLeader("TripComparator.SideCard", logger);
-            bool sideCard2IsLeader = await CheckIfOtherSideCardIsLeader("TripComparator2.SideCard2", logger);
+            bool tripComparatorIsLeader = await CheckIfOtherTripComparatorIsLeader("TripComparator", logger);
+            bool tripComparator2IsLeader = await CheckIfOtherTripComparatorIsLeader("TripComparator2", logger);
 
-            if (sideCard1IsLeader || sideCard2IsLeader)
+            if (tripComparatorIsLeader || tripComparator2IsLeader)
             {
                 logger.LogInformation("A leader is already assigned.");
                 return true;
@@ -149,7 +149,7 @@ namespace RouteTimeProvider
             return false;
         }
 
-        private static async Task<bool> CheckIfOtherSideCardIsLeader(string targetService, ILogger logger)
+        private static async Task<bool> CheckIfOtherTripComparatorIsLeader(string targetService, ILogger logger)
         {
             try
             {
@@ -157,13 +157,13 @@ namespace RouteTimeProvider
                     new GetRoutingRequest()
                     {
                         TargetService = targetService,
-                        Endpoint = $"SideCard/CheckIfLeader",
+                        Endpoint = $"Leader/IsLeader",
                         Mode = LoadBalancingMode.RoundRobin
                     });
 
                 await foreach (var result in res!.ReadAllAsync())
                 {
-                    if (result.Content != null && JsonConvert.DeserializeObject<string>(result.Content) == "Pod leader is confirmed as the leader.")
+                    if (result.Content != null && JsonConvert.DeserializeObject<string>(result.Content) == "isLeader")
                     {
                         logger.LogInformation($"{targetService} is currently the leader.");
                         return true;
@@ -178,7 +178,7 @@ namespace RouteTimeProvider
             return false;
         }
 
-        private static async Task<bool> IsSideCardAlive(string targetService, ILogger logger)
+        private static async Task<bool> IsTripComparatorAlive(string targetService, ILogger logger)
         {
             try
             {
@@ -188,7 +188,7 @@ namespace RouteTimeProvider
                     new GetRoutingRequest()
                     {
                         TargetService = targetService,
-                        Endpoint = "SideCard/isAlive",
+                        Endpoint = "Leader/isAlive",
                         Mode = LoadBalancingMode.Broadcast
                     });
 
@@ -223,13 +223,13 @@ namespace RouteTimeProvider
                     new GetRoutingRequest()
                     {
                         TargetService = targetService,
-                        Endpoint = "SideCard/PromoteToLeader",
+                        Endpoint = "Leader/LeaderPromotion",
                         Mode = LoadBalancingMode.RoundRobin
                     });
 
                 await foreach (var result in res!.ReadAllAsync())
                 {
-                    if (result.Content != null && result.Content == "Promoted to leader")
+                    if (result.Content != null && result.Content == "Promotion to Leader success")
                     {
                         logger.LogInformation($"{targetService} has been promoted to leader.");
                         return true;

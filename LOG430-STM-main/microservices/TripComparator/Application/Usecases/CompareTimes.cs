@@ -85,6 +85,7 @@ namespace Application.Usecases
             if (currentState == "GetBestBus")
             {
                 _logger.LogInformation("Executing BeginTracking...");
+                
                 if (_optimalBus == null)
                 {
                     throw new Exception("Bus data was null. Cannot begin tracking.");

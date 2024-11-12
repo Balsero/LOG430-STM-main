@@ -40,12 +40,25 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
         }
 
         var redisDb = RedisConnectionController.GetDatabase();
-        RedisConnectionController.TestConnection();
-
+        
         string processingLockKey = "TripComparator:ProcessingLock";
         string statusKey = "TripComparator:ConsumeStatus";
         string startingKey = "TripComparator:StartingCoordinates";
         string destinationKey = "TripComparator:DestinationCoordinates";
+
+
+        string startingCoordinates = RemoveWhiteSpaces(context.Message.StartingCoordinates);
+        string destinationCoordinates = RemoveWhiteSpaces(context.Message.DestinationCoordinates);
+
+        await redisDb.StringSetAsync(startingKey, startingCoordinates);
+        await redisDb.StringSetAsync(destinationKey, destinationCoordinates);
+
+        // Définir le statut dans Redis
+        await redisDb.StringSetAsync(statusKey, "Called");
+
+        // Lire les coordonnées pour validation
+        var storedStartingCoordinates = await redisDb.StringGetAsync(startingKey);
+        var storedDestinationCoordinates = await redisDb.StringGetAsync(destinationKey);
 
         // Acquérir le verrou pour empêcher ProcessInLoop() de s'exécuter en même temps
         var lockAcquired = await redisDb.StringSetAsync(processingLockKey, "Locked", TimeSpan.FromSeconds(30), When.NotExists);
@@ -54,23 +67,8 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
             _logger.LogInformation("Consume() is already running or ProcessInLoop() is active.");
             return;
         }
-
         try
         {
-            // Extraire et sauvegarder les coordonnées
-            string startingCoordinates = RemoveWhiteSpaces(context.Message.StartingCoordinates);
-            string destinationCoordinates = RemoveWhiteSpaces(context.Message.DestinationCoordinates);
-
-            await redisDb.StringSetAsync(startingKey, startingCoordinates);
-            await redisDb.StringSetAsync(destinationKey, destinationCoordinates);
-
-            // Définir le statut dans Redis
-            await redisDb.StringSetAsync(statusKey, "Called");
-
-            // Lire les coordonnées pour validation
-            var storedStartingCoordinates = await redisDb.StringGetAsync(startingKey);
-            var storedDestinationCoordinates = await redisDb.StringGetAsync(destinationKey);
-
             if (!storedStartingCoordinates.HasValue || !storedDestinationCoordinates.HasValue)
             {
                 throw new Exception("Failed to save or retrieve coordinates from Redis.");
