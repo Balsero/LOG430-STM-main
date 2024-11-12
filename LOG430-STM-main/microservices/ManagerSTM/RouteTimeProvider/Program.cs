@@ -125,7 +125,7 @@ namespace RouteTimeProvider
                 }
                 else
                 {
-                    logger.LogInformation("Un autre ManagerSTM est actuellement Leader. Attente avant de réessayer...");
+                    logger.LogInformation("Un autre ManagerSTM est actuellement Leader. Attente avant de i...");
                 }
 
                 // Attendre avant de réessayer pour éviter une charge excessive sur Redis

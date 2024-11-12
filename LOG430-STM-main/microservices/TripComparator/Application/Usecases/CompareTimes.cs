@@ -50,7 +50,7 @@ namespace Application.Usecases
             _logger.LogInformation($"Initial CurrentState: {currentState}");
 
             // Étape 1 : GetTravelTimeInSeconds
-            if (string.IsNullOrEmpty(currentState) || currentState == "GetTravelTimeInSeconds")
+            if (string.IsNullOrEmpty(currentState))
             {
                 _logger.LogInformation("Executing GetTravelTimeInSeconds...");
                 _averageCarTravelTime = await _routeTimeProvider.GetTravelTimeInSeconds(startingCoordinates, destinationCoordinates);
@@ -66,7 +66,7 @@ namespace Application.Usecases
             }
 
             // Étape 2 : GetBestBus
-            if (currentState == "GetTravelTimeInSeconds" || currentState == "GetBestBus")
+            if (currentState == "GetTravelTimeInSeconds")
             {
                 _logger.LogInformation("Executing GetBestBus...");
                 _optimalBus = await _iBusInfoProvider.GetBestBus(startingCoordinates, destinationCoordinates);
@@ -82,7 +82,7 @@ namespace Application.Usecases
             }
 
             // Étape 3 : BeginTracking
-            if (currentState == "GetBestBus" || currentState == "BeginTracking")
+            if (currentState == "GetBestBus")
             {
                 _logger.LogInformation("Executing BeginTracking...");
                 if (_optimalBus == null)
@@ -107,8 +107,16 @@ namespace Application.Usecases
         {
             var redisDb = RedisConnectionManager.GetDatabase();
 
-            // Lire l'état actuel depuis Redis
-            string currentState = await redisDb.StringGetAsync("TripComparator:CurrentState");
+            // Fonction locale pour rafraîchir l'état
+            async Task<string> RefreshStateAsync()
+            {
+                var state = await redisDb.StringGetAsync("TripComparator:CurrentState");
+                _logger.LogInformation($"Refreshed CurrentState: {state}");
+                return state.HasValue ? state.ToString() : string.Empty; // Retourner une chaîne vide si null
+            }
+
+            // Récupérer l'état initial
+            string currentState = await RefreshStateAsync();
 
             if (currentState == "BeginTracking" || currentState == "TrackingComplete")
 
@@ -116,25 +124,25 @@ namespace Application.Usecases
 
                 if (_optimalBus is null) throw new Exception("bus data was null");
 
-            var trackingOnGoing = true;
+                var trackingOnGoing = true;
 
-            while (trackingOnGoing && await _periodicTimer.WaitForNextTickAsync())
-            {
-                var trackingResult = await _iBusInfoProvider.GetTrackingUpdate();
-
-                if (trackingResult is null) continue;
-
-                trackingOnGoing = !trackingResult.TrackingCompleted;
-
-                var busPosition = new BusPosition()
+                while (trackingOnGoing && await _periodicTimer.WaitForNextTickAsync())
                 {
-                    Message = trackingResult.Message + $"\nCar: {_averageCarTravelTime} seconds",
-                    Seconds = trackingResult.Duration,
-                };
+                    var trackingResult = await _iBusInfoProvider.GetTrackingUpdate();
 
-                await channel.WriteAsync(busPosition);
-            }
-            channel.Complete();
+                    if (trackingResult is null) continue;
+
+                    trackingOnGoing = !trackingResult.TrackingCompleted;
+
+                    var busPosition = new BusPosition()
+                    {
+                        Message = trackingResult.Message + $"\nCar: {_averageCarTravelTime} seconds",
+                        Seconds = trackingResult.Duration,
+                    };
+
+                    await channel.WriteAsync(busPosition);
+                }
+                channel.Complete();
             }
         }
 

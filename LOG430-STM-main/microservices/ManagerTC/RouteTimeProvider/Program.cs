@@ -130,7 +130,7 @@ namespace RouteTimeProvider
                 }
 
                 // Attendre avant de réessayer pour éviter une charge excessive sur Redis
-                await Task.Delay(50, cancellationToken);
+                await Task.Delay(100, cancellationToken);
             }
         }
 
