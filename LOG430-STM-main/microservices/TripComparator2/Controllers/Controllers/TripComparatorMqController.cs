@@ -137,7 +137,7 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
                 if (consumeStatus != "Called")
                 {
                     _logger.LogInformation("Consume() has not been called yet. Waiting...");
-                    await Task.Delay(1000, cancellationToken);
+                    await Task.Delay(50, cancellationToken);
                     continue;
                 }
 
@@ -174,7 +174,7 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred during ProcessInLoop. Retrying...");
-                await Task.Delay(1000, cancellationToken);
+                await Task.Delay(50, cancellationToken);
             }
         }
 
