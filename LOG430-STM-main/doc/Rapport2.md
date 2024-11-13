@@ -5,6 +5,9 @@ Equipe: 04
 
 Membres de l'équipe:
 Jonathan Rodriguez Tames 
+Ali Dickens Augustin
+Jean-Philippe Lalonde
+Alexandre Roy (Il a annulé le cours il y a 2 semaines)
 
 ## Évaluation de la participation
 
@@ -12,11 +15,10 @@ Jonathan Rodriguez Tames
 
 | nom de l'étudiant        | Facteur multiplicatif|
 |:--------------------:    |:--------------------:|
-| Jean Travaillant         |          1           |
-| Joe Paresseux            |        0.75          |
-| Jules Procrastinateu     |        0.5           |
-| Jeanne Parasite          |        0.25          |
-| Jay Oublié               |          0           |
+| Jonathan Rodriguez Tames    |           1          |
+| Ali Dickens Augustin        |			  1          |
+| Jean-Philippe Lalonde		  |			  1          |
+
 
 ## Introduction
 
@@ -53,9 +55,13 @@ Dans ce rapport, nous présenterons les stratégies mises en place pour répondr
 
 ### Vues architecturales de type module - redondance
 
+![Diagramme de module](ClasseDiagramme430.drawio.svg)
+
 ### Vues architecturales de type composant et connecteur - redondance
+![Diagramme CC](C&CArchitecte.drawio.svg)
 
 ### Vues architecturales de type allocation - redondance
+![Diagramme Sequence](Allocation.drawio.svg)
 
 >Note : Une légende est nécessaire dans les vues primaires pour assurer une compréhension claire des éléments représentés.
 
@@ -174,11 +180,19 @@ Bien que la redondance active offre des avantages en termes de disponibilité, s
 ## Diagrammes de séquence pour expliquer le fonctionnement des tactiques de redondance
 
 - Vous devez fournir les diagrammes de séquence démontrant le fonctionnement de l'architecture avant le début du laboratoire 2.
+
+ ![Diagramme de séquence initial](Diagrammesequencelab1.drawio.svg)
 - Vous devez fournir les diagrammes de séquence démontrant le fonctionnement après la réalisation du laboratoire 2.
-- Représentez les différents moments de vie du système, si applicables:
-  - L'état au démarrage des conteneurs,
-  - La mécanique de détection d'un problème,
-  - La mécanique de rétablissement du service, de récupération ou de reconfiguration.
+
+![Diagramme Gestion Leader par ManagerTC](./GestionLeaderManagerTC.svg)
+
+![Diagramme Gestion Leader par ManagerTC](GestionManagerSTM.svg)
+
+![Diagramme de Redondance STM](RedondanceSTM.svg)
+
+![Diagramme de Redondance TripComparator](RedondanceTripComparator.svg)
+
+  
 
 ## Questions
 
