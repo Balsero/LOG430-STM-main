@@ -1,149 +1,376 @@
 <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Laboratoire &num;2</title>
-            <style>
-/* From extension vscode.github */
+<html>
+<head>
+<title>Rapport2.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.vscode-dark img[src$=\#gh-light-mode-only],
-.vscode-light img[src$=\#gh-dark-mode-only],
-.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
-.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
-	display: none;
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
 }
 
 </style>
-            
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+
 <style>
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-        </style>
-        <style>
-.task-list-item {
-    list-style-type: none;
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
 }
 
-.task-list-item-checkbox {
-    margin-left: -20px;
-    vertical-align: middle;
-    pointer-events: none;
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
 }
 </style>
+
 <style>
-:root {
-  --color-note: #0969da;
-  --color-tip: #1a7f37;
-  --color-warning: #9a6700;
-  --color-severe: #bc4c00;
-  --color-caution: #d1242f;
-  --color-important: #8250df;
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
 }
 
 </style>
-<style>
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-note: #2f81f7;
-    --color-tip: #3fb950;
-    --color-warning: #d29922;
-    --color-severe: #db6d28;
-    --color-caution: #f85149;
-    --color-important: #a371f7;
-  }
-}
 
-</style>
-<style>
-.markdown-alert {
-  padding: 0.5rem 1rem;
-  margin-bottom: 16px;
-  color: inherit;
-  border-left: .25em solid #888;
-}
-
-.markdown-alert>:first-child {
-  margin-top: 0
-}
-
-.markdown-alert>:last-child {
-  margin-bottom: 0
-}
-
-.markdown-alert .markdown-alert-title {
-  display: flex;
-  font-weight: 500;
-  align-items: center;
-  line-height: 1
-}
-
-.markdown-alert .markdown-alert-title .octicon {
-  margin-right: 0.5rem;
-  display: inline-block;
-  overflow: visible !important;
-  vertical-align: text-bottom;
-  fill: currentColor;
-}
-
-.markdown-alert.markdown-alert-note {
-  border-left-color: var(--color-note);
-}
-
-.markdown-alert.markdown-alert-note .markdown-alert-title {
-  color: var(--color-note);
-}
-
-.markdown-alert.markdown-alert-important {
-  border-left-color: var(--color-important);
-}
-
-.markdown-alert.markdown-alert-important .markdown-alert-title {
-  color: var(--color-important);
-}
-
-.markdown-alert.markdown-alert-warning {
-  border-left-color: var(--color-warning);
-}
-
-.markdown-alert.markdown-alert-warning .markdown-alert-title {
-  color: var(--color-warning);
-}
-
-.markdown-alert.markdown-alert-tip {
-  border-left-color: var(--color-tip);
-}
-
-.markdown-alert.markdown-alert-tip .markdown-alert-title {
-  color: var(--color-tip);
-}
-
-.markdown-alert.markdown-alert-caution {
-  border-left-color: var(--color-caution);
-}
-
-.markdown-alert.markdown-alert-caution .markdown-alert-title {
-  color: var(--color-caution);
-}
-
-</style>
-        
-        </head>
-        <body class="vscode-body vscode-light">
-            <h1 id="laboratoire-2">Laboratoire #2</h1>
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="laboratoire-2">Laboratoire #2</h1>
 <p>Groupe: 2
 Equipe: 04</p>
 <p>Membres de l'équipe:
 Jonathan Rodriguez Tames</p>
-<h2 id="évaluation-de-la-participation">Évaluation de la participation</h2>
+<h2 id="%C3%A9valuation-de-la-participation">Évaluation de la participation</h2>
 <blockquote>
 <p>L'évaluation suivante est faite afin d'encourager des discussions au sein de l'équipe. Une discussion saine du travail de chacun est utile afin d'améliorer le climat de travail. Les membres de l'équipe ont le droit de retirer le nom d'un ou une collègue du rapport.</p>
 </blockquote>
@@ -178,9 +405,36 @@ Jonathan Rodriguez Tames</p>
 </tbody>
 </table>
 <h2 id="introduction">Introduction</h2>
-<blockquote>
-<p>TODO: insérer votre introduction</p>
-</blockquote>
+<p>Dans le cadre de ce laboratoire, notre objectif est d'améliorer la disponibilité de nos services. Pour ce faire, nous devons respecter certaines contraintes afin de garantir le succès de notre expérience. Pendant 5 minutes, un outil similaire à Chaos Monkey détruira nos services à une fréquence de 6 fois par minute. Notre but est de créer une infrastructure capable de se rétablir et de continuer à fournir le service de suivi des bus pour deux coordonnées spécifiques.</p>
+<h2 id="crit%C3%A8res-de-r%C3%A9ussite">Critères de réussite</h2>
+<p>Pour considérer notre expérience comme réussie, nous devons respecter les critères suivants :</p>
+<ul>
+<li>
+<p><strong>Actualisation continue</strong> : Les messages affichant les informations de suivi ne doivent pas cesser de s'actualiser et doivent indiquer le bus correspondant aux coordonnées fournies.</p>
+</li>
+<li>
+<p><strong>Temps de réponse</strong> : Notre temps de réponse (ms) doit être inférieur à 250 tout au long de l'expérience.</p>
+</li>
+<li>
+<p><strong>Stabilité</strong> : Le temps nécessaire au système pour se rétablir doit également être inférieur à 250 ms.</p>
+</li>
+<li>
+<p><strong>Précision des trajets</strong> : La durée correcte du trajet en voiture doit s'afficher correctement.</p>
+</li>
+<li>
+<p><strong>Réduction des erreurs</strong> : Nous devons minimiser le nombre d'erreurs, telles que les messages répétés ou en retard.</p>
+</li>
+</ul>
+<h2 id="plan-du-rapport">Plan du rapport</h2>
+<p>Dans ce rapport, nous présenterons les stratégies mises en place pour répondre à ces exigences. Pour cela, nous aborderons les points suivants :</p>
+<ul>
+<li>Vues architecturales de type module pour le systeme de redondance</li>
+<li>Vues architecturales de type composant et connecteur pour le systeme de redondance</li>
+<li>Vues architecturales de type allocation pour le systeme de redondance</li>
+<li>Diagrammes de séquence avant et après l'implémentation de nos stratégies de redondance</li>
+<li>Alternatives envisagées</li>
+<li>Réponses à des questions concernant l'interopérabilité, les concepts de Kubernetes liés au projet et l'utilisation de l'injection de dépendance</li>
+</ul>
 <h2 id="vues-architecturales">Vues architecturales</h2>
 <ul>
 <li>Au travers des différentes vues architecturales, montrez comment la redondance est présente dans vos microservices après l'implémentation du laboratoire 2. La présence des vues primaires et des catalogues d'éléments est nécessaire. Assurez-vous de bien présenter la tactique de redondance dans vos vues.</li>
@@ -191,21 +445,181 @@ Jonathan Rodriguez Tames</p>
 <blockquote>
 <p>Note : Une légende est nécessaire dans les vues primaires pour assurer une compréhension claire des éléments représentés.</p>
 </blockquote>
-<h2 id="alternatives-envisagées">Alternatives envisagées</h2>
-<p>Dans cette expérience, nous avions le choix d’implémenter deux types de redondances différentes pour TripComparator : soit une redondance passive pour l'assignation du Leader, soit une redondance active pour l’envoi des messages de chaque TripComparator. Dans tous les cas, chaque implémentation avait ses particularités, ses avantages et ses inconvénients, que nous présenterons ici. Par la suite, nous expliquerons pourquoi nous avons choisi une approche plutôt qu’une autre.</p>
-<p>Redondance Passive
-La redondance passive pour le TripComparator présente certaines particularités. Tout d’abord, il n’y a qu’un seul TripComparator Leader qui construit le message à envoyer à RabbitMQ. Pendant ce temps, l’autre instance reste en veille (stand-by) jusqu’à ce que le Leader cesse de fonctionner. À ce moment-là, l’instance en veille prend la relève.</p>
-<p>Pour permettre ce fonctionnement, nous avons implémenté un service Manager, dont le rôle principal est de surveiller en permanence l’état des deux instances de TripComparator. Le Manager doit également s’assurer qu’il n’y a qu’un seul Leader actif à tout moment, car plusieurs Leaders pourraient entraîner des messages dupliqués dans l’affichage.</p>
-<p>De plus, comme une instance doit reprendre l’exécution après la défaillance d’un Leader, il est crucial que le nouveau Leader sache où en est le système dans l’exécution des tâches. Pour cela, nous avons intégré une base de données Redis. Redis stocke les informations initiales de l’expérience ainsi que l’état du système en fonction des tâches accomplies. Ainsi, le nouveau Leader peut reprendre précisément là où s’était arrêté son prédécesseur, évitant les répétitions de tâches qui pourraient provoquer des erreurs dans les messages affichés.</p>
-<p>Redondance Active
-En ce qui concerne la redondance active, cette approche présente des particularités distinctes. Dans ce mode, les deux instances de TripComparator envoient simultanément des messages à RabbitMQ. Cela nécessite un filtre pour sélectionner un seul message à afficher sur le tableau de bord.</p>
-<p>Cependant, chaque instance effectue des requêtes en continu auprès du STM, rendant le filtrage plus complexe. Bien que nous ayons envisagé d’implémenter un filtre pour nettoyer les messages, nous avons finalement abandonné cette solution. La principale raison était notre compréhension insuffisante du processus d’acheminement des messages vers RabbitMQ et des mécanismes nécessaires pour concevoir un filtre efficace.</p>
-<p>Décision Finale
-Nous avons finalement opté pour la redondance passive, car cette approche avait déjà été implémentée pour le service STM. Cela nous a permis de réutiliser les SideCars existants pour communiquer avec le Manager concernant l’état du service STM, ce qui nous a fait gagner un temps précieux.</p>
-<p>De plus, nous avons pu capitaliser sur nos connaissances de Redis pour stocker les données essentielles au bon déroulement de l’expérience. Cette solution s’est avérée plus rapide à mettre en œuvre et mieux adaptée à notre contexte technique, tout en évitant les complexités liées à la redondance active.
-Alex — 10/11/2024 23:40
-L'interopérabilité est la capacité de différents systèmes, applications ou services à communiquer, échanger des données et travailler ensemble de manière efficace, même s'ils sont construits sur des technologies ou des plateformes différentes. Dans le contexte des microservices, cela signifie que chaque service doit pouvoir interagir avec d'autres services, peu importe la manière dont ils sont développés, déployés ou structurés, tout en garantissant une intégration fluide et cohérente.</p>
-<h2 id="diagrammes-de-séquence-pour-expliquer-le-fonctionnement-des-tactiques-de-redondance">Diagrammes de séquence pour expliquer le fonctionnement des tactiques de redondance</h2>
+<h2 id="alternatives-envisag%C3%A9es">Alternatives envisagées</h2>
+<h2 id="analyse-des-types-de-redondances-pour-tripcomparator">Analyse des types de redondances pour TripComparator</h2>
+<p>Dans cette expérience, nous avions le choix d’implémenter <strong>deux types de redondances différentes</strong> pour le microservice <strong>TripComparator</strong> :</p>
+<ul>
+<li>Une <strong>redondance passive</strong> pour l'assignation du Leader.</li>
+<li>Une <strong>redondance active</strong> pour l’envoi simultané des messages de chaque TripComparator.</li>
+</ul>
+<p>Chaque implémentation avait ses <strong>particularités</strong>, ses <strong>avantages</strong> et ses <strong>inconvénients</strong>, que nous détaillerons ici. Enfin, nous expliquerons pourquoi nous avons choisi une approche plutôt qu’une autre.</p>
+<hr>
+<h2 id="redondance-passive"><strong>Redondance Passive</strong></h2>
+<p>La redondance passive repose sur un <strong>modèle maître-esclave</strong> dans lequel une seule instance de <strong>TripComparator</strong> est active à la fois, tandis que l’autre reste en attente (<strong>stand-by</strong>). Voici les particularités et la logique derrière cette approche :</p>
+<h3 id="particularit%C3%A9s"><strong>Particularités</strong></h3>
+<ol>
+<li>
+<p><strong>Un seul Leader actif</strong> :</p>
+<ul>
+<li>Une seule instance de <strong>TripComparator</strong> (le Leader) est responsable de la <strong>construction des messages</strong> et de leur envoi à <strong>RabbitMQ</strong>.</li>
+<li>L’autre instance reste en veille jusqu’à ce que le Leader devienne inactif.</li>
+</ul>
+</li>
+<li>
+<p><strong>Prise de relais</strong> :</p>
+<ul>
+<li>Si le Leader cesse de fonctionner (panne ou arrêt), l’instance en veille devient automatiquement le nouveau Leader.</li>
+</ul>
+</li>
+<li>
+<p><strong>Supervision par un Manager</strong> :</p>
+<ul>
+<li>Un service <strong>Manager</strong> surveille constamment l’état des deux instances de TripComparator. Son rôle est double :
+<ul>
+<li>Vérifier qu’un seul Leader est actif à un moment donné.</li>
+<li>Éviter que plusieurs Leaders simultanés provoquent l’envoi de <strong>messages dupliqués</strong> dans RabbitMQ.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Redis pour la continuité</strong> :</p>
+<ul>
+<li>Une base de données Redis est utilisée pour stocker :
+<ul>
+<li>Les informations initiales de l’expérience.</li>
+<li>L’état courant des tâches exécutées.</li>
+</ul>
+</li>
+<li>Cela permet au nouveau Leader de <strong>reprendre exactement là où le précédent s’était arrêté</strong>, réduisant ainsi les <strong>erreurs</strong> et <strong>redondances</strong> dans les messages envoyés.</li>
+</ul>
+</li>
+</ol>
+<h3 id="avantages"><strong>Avantages</strong></h3>
+<ul>
+<li>
+<p><strong>Simplicité du flux de messages</strong> :</p>
+<ul>
+<li>Un seul Leader envoie des messages, ce qui élimine le besoin de filtrage au niveau de RabbitMQ.</li>
+</ul>
+</li>
+<li>
+<p><strong>Reprise sans perte de données</strong> :</p>
+<ul>
+<li>Grâce à Redis, le système peut reprendre l'exécution sans répéter les tâches déjà accomplies.</li>
+</ul>
+</li>
+<li>
+<p><strong>Utilisation efficace des ressources</strong> :</p>
+<ul>
+<li>Une seule instance est active, réduisant ainsi la consommation de ressources par rapport à une redondance active.</li>
+</ul>
+</li>
+</ul>
+<h3 id="inconv%C3%A9nients"><strong>Inconvénients</strong></h3>
+<ul>
+<li>
+<p><strong>Temps de basculement</strong> :</p>
+<ul>
+<li>Lorsque le Leader devient inactif, il y a un léger <strong>temps de latence</strong> avant que l'instance en veille prenne le relais.</li>
+</ul>
+</li>
+<li>
+<p><strong>Dépendance à Redis</strong> :</p>
+<ul>
+<li>Si Redis est indisponible, la continuité de l’exécution est compromise.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="redondance-active"><strong>Redondance Active</strong></h2>
+<p>La redondance active adopte une approche où <strong>les deux instances de TripComparator fonctionnent simultanément</strong> pour envoyer des messages à RabbitMQ.</p>
+<h3 id="particularit%C3%A9s"><strong>Particularités</strong></h3>
+<ol>
+<li>
+<p><strong>Envoi simultané des messages</strong> :</p>
+<ul>
+<li>Les deux instances de TripComparator <strong>envoient des messages en parallèle</strong> à RabbitMQ.</li>
+</ul>
+</li>
+<li>
+<p><strong>Nécessité d’un filtre</strong> :</p>
+<ul>
+<li>Étant donné que les deux instances produisent des messages similaires, un <strong>filtre</strong> est nécessaire pour choisir quel message sera affiché sur le tableau de bord.</li>
+</ul>
+</li>
+<li>
+<p><strong>Requêtes STM continues</strong> :</p>
+<ul>
+<li>Chaque instance envoie des <strong>requêtes en continu</strong> aux services STM pour récupérer les informations nécessaires, augmentant la charge sur STM.</li>
+</ul>
+</li>
+<li>
+<p><strong>Complexité accrue</strong> :</p>
+<ul>
+<li>La conception et l’implémentation d’un filtre efficace pour éliminer les doublons nécessitent une compréhension approfondie du <strong>processus d’acheminement des messages</strong> vers RabbitMQ.</li>
+</ul>
+</li>
+</ol>
+<h3 id="avantages"><strong>Avantages</strong></h3>
+<ul>
+<li>
+<p><strong>Tolérance accrue aux pannes</strong> :</p>
+<ul>
+<li>Même si une instance devient inactive, l’autre continue d’envoyer des messages, assurant ainsi une <strong>disponibilité maximale</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Réduction des temps de basculement</strong> :</p>
+<ul>
+<li>Contrairement à la redondance passive, il n’y a pas de délai pour basculer entre les instances puisque les deux fonctionnent simultanément.</li>
+</ul>
+</li>
+</ul>
+<h3 id="inconv%C3%A9nients"><strong>Inconvénients</strong></h3>
+<ul>
+<li>
+<p><strong>Complexité du filtrage</strong> :</p>
+<ul>
+<li>La conception d’un filtre pour éviter les doublons est techniquement exigeante.</li>
+</ul>
+</li>
+<li>
+<p><strong>Charge réseau et système</strong> :</p>
+<ul>
+<li>Les requêtes continues de chaque instance vers STM augmentent la <strong>charge réseau</strong> et peuvent impacter les performances globales.</li>
+</ul>
+</li>
+<li>
+<p><strong>Efforts d'implémentation plus élevés</strong> :</p>
+<ul>
+<li>La mise en œuvre de la redondance active est plus complexe et nécessite davantage de tests.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="d%C3%A9cision-finale"><strong>Décision Finale</strong></h2>
+<p>Nous avons opté pour la <strong>redondance passive</strong> pour les raisons suivantes :</p>
+<h3 id="1-r%C3%A9utilisation-des-composants-existants"><strong>1. Réutilisation des composants existants</strong></h3>
+<ul>
+<li>Cette approche avait déjà été implémentée pour le service STM, ce qui nous a permis de <strong>réutiliser les SideCars existants</strong> pour communiquer avec le Manager.</li>
+</ul>
+<h3 id="2-simplicit%C3%A9-et-rapidit%C3%A9-dimpl%C3%A9mentation"><strong>2. Simplicité et rapidité d’implémentation</strong></h3>
+<ul>
+<li>La redondance passive est plus simple à mettre en œuvre.</li>
+<li>En utilisant Redis pour stocker les états du système, nous avons pu <strong>accélérer le développement</strong> et garantir une reprise correcte après une panne.</li>
+</ul>
+<h3 id="3-charge-r%C3%A9seau-r%C3%A9duite"><strong>3. Charge réseau réduite</strong></h3>
+<ul>
+<li>Contrairement à la redondance active, la redondance passive limite le nombre de requêtes simultanées envoyées aux services STM.</li>
+</ul>
+<h3 id="4-adaptation-au-contexte-technique"><strong>4. Adaptation au contexte technique</strong></h3>
+<ul>
+<li>Dans notre contexte technique, où nous avons une compréhension limitée des mécanismes de filtrage et d'acheminement de message vers la RabbitMQ, la redondance passive était plus adaptée.</li>
+</ul>
+<h3 id="synth%C3%A8se"><strong>Synthèse</strong></h3>
+<p>Bien que la redondance active offre des avantages en termes de disponibilité, sa complexité accrue et son impact sur les performances nous ont poussés à privilégier la redondance passive. Cette solution s’est avérée plus rapide à mettre en œuvre et plus adaptée à nos connaissances techniques.</p>
+<h2 id="diagrammes-de-s%C3%A9quence-pour-expliquer-le-fonctionnement-des-tactiques-de-redondance">Diagrammes de séquence pour expliquer le fonctionnement des tactiques de redondance</h2>
 <ul>
 <li>Vous devez fournir les diagrammes de séquence démontrant le fonctionnement de l'architecture avant le début du laboratoire 2.</li>
 <li>Vous devez fournir les diagrammes de séquence démontrant le fonctionnement après la réalisation du laboratoire 2.</li>
@@ -218,31 +632,535 @@ L'interopérabilité est la capacité de différents systèmes, applications ou 
 </li>
 </ul>
 <h2 id="questions">Questions</h2>
+<h2 id="question-1-discuter-de-linterop%C3%A9rabilit%C3%A9-des-microservices-tout-en-fournissant-des-exemples-dune-ou-plusieurs-tactiques-utilis%C3%A9es-si-vous-pensez-quaucune-tactique-nest-utilis%C3%A9e-dans-le-code-nommez-et-d%C3%A9crivez-une-ou-plusieurs-tactiques-qui-pourraient-%C3%AAtre-utilis%C3%A9es"><strong>Question 1</strong> Discuter de l'interopérabilité des microservices, tout en fournissant des exemples d'une ou plusieurs tactiques utilisées. Si vous pensez qu'aucune tactique n'est utilisée dans le code, nommez et décrivez une ou plusieurs tactiques qui pourraient être utilisées.</h2>
+<hr>
+<p>L'<strong>interopérabilité des microservices</strong> est essentielle pour garantir que les différents services au sein d'un système distribué peuvent communiquer efficacement, partager des données et collaborer pour accomplir des tâches. Cette interopérabilité repose sur des <strong>tactiques</strong> spécifiques qui permettent de découvrir, de gérer et de synchroniser les interactions entre services.</p>
+<p>Dans ce cas, nous explorons l'interopérabilité entre le <strong>SideCard</strong> et le <strong>LeaderController</strong> dans le contexte du service STM.</p>
+<hr>
+<h2 id="tactiques-dinterop%C3%A9rabilit%C3%A9-utilis%C3%A9es"><strong>Tactiques d'Interopérabilité utilisées</strong></h2>
+<h3 id="1-d%C3%A9couverte-des-services"><strong>1. Découverte des Services</strong></h3>
+<h4 id="d%C3%A9finition"><strong>Définition</strong></h4>
+<p>La découverte des services est une tactique d'interopérabilité qui consiste à localiser dynamiquement les services nécessaires pour établir une communication. Cette approche est essentielle dans les environnements où les adresses des services ne sont pas fixes ou prédéterminées.</p>
+<h4 id="application-dans-le-syst%C3%A8me"><strong>Application dans le Système</strong></h4>
+<p>Dans l'interaction entre <strong>SideCard</strong> et <strong>LeaderController</strong>, la découverte est réalisée grâce à des mécanismes comme :</p>
+<ul>
+<li>L'utilisation d'un <strong>PodLeaderId</strong> (identifiant dynamique du leader du pod) pour identifier le service principal dans un environnement multi-pods.</li>
+<li>La possibilité de récupérer dynamiquement l'adresse d'un leader via une logique de résolution des services.</li>
+</ul>
+<h4 id="impact"><strong>Impact</strong></h4>
+<ul>
+<li>Réduit la dépendance aux configurations statiques.</li>
+<li>Renforce la flexibilité en permettant aux services de s'adapter dynamiquement à des changements d'infrastructure.</li>
+</ul>
+<h3 id="exemple-de-mise-en-oeuvre-dans-le-code"><strong>Exemple de mise en oeuvre dans le code</strong></h3>
+<pre class="hljs"><code><div>[<span class="hljs-meta">HttpGet</span>]
+[<span class="hljs-meta">ActionName(nameof(PromoteToLeader))</span>]
+[<span class="hljs-meta">EnableRateLimiting(<span class="hljs-meta-string">"fixed"</span>)</span>]
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">async</span> Task&lt;ActionResult&lt;<span class="hljs-keyword">string</span>&gt;&gt; PromoteToLeader()
+{
+    <span class="hljs-keyword">var</span> podLeaderID = <span class="hljs-keyword">await</span> ServiceMeshInfoProvider.PodLeaderId;
+
+    <span class="hljs-keyword">try</span>
+    {
+        <span class="hljs-keyword">var</span> res = <span class="hljs-keyword">await</span> RestController.Get(
+            <span class="hljs-keyword">new</span> GetRoutingRequest()
+            {
+                TargetService = podLeaderID,
+                Endpoint = <span class="hljs-string">"Leader/LeaderPromotion"</span>,
+                Mode = LoadBalancingMode.Broadcast <span class="hljs-comment">// Assurez-vous que ce mode est pris en charge</span>
+            });
+    }
+    <span class="hljs-keyword">catch</span> (Exception e)
+    {
+        _logger.LogError(e, <span class="hljs-string">"Error promoting to leader"</span>);
+        <span class="hljs-keyword">return</span> StatusCode(<span class="hljs-number">500</span>, <span class="hljs-string">"Error promoting to leader"</span>);
+    }
+
+    <span class="hljs-keyword">return</span> Ok(<span class="hljs-string">"Promoted to leader"</span>);
+}
+</div></code></pre>
+<h3 id="2-gestion-des-interfaces"><strong>2. Gestion des Interfaces</strong></h3>
+<h4 id="d%C3%A9finition"><strong>Définition</strong></h4>
+<p>La gestion des interfaces consiste à organiser les interactions entre services de manière efficace en définissant clairement les points d'accès, les types de données échangées et les règles de communication.</p>
+<h4 id="tactiques-appliqu%C3%A9es"><strong>Tactiques Appliquées</strong></h4>
+<ol>
+<li>
+<p><strong>Orchestration</strong></p>
+<ul>
+<li><strong>Description</strong> : Coordination centralisée des interactions pour accomplir une tâche complexe.</li>
+<li><strong>Application dans le système</strong> : Le <strong>SideCard</strong> joue un rôle dans l'orchestration des communications en interagissant avec le <strong>STM</strong> pour déterminer ou mettre à jour le rôle de leader.</li>
+</ul>
+</li>
+<li>
+<p><strong>Adaptation d'Interface</strong></p>
+<ul>
+<li><strong>Description</strong> : Modification ou enrichissement des capacités d'une interface pour s'adapter aux besoins spécifiques d'un service.</li>
+<li><strong>Application dans le système</strong> : Le <strong>STM</strong> expose des capacités qui permettent au <strong>SideCard</strong> de vérifier ou de signaler des changements d'état liés au leader.</li>
+</ul>
+</li>
+</ol>
+<h4 id="exemple-de-mise-en-oeuvre-dans-le-code"><strong>Exemple de mise en oeuvre dans le code</strong></h4>
+<pre class="hljs"><code><div>    [<span class="hljs-meta">HttpGet</span>]
+    [<span class="hljs-meta">ActionName(nameof(CheckIfLeader))</span>]
+    [<span class="hljs-meta">EnableRateLimiting(<span class="hljs-meta-string">"fixed"</span>)</span>]
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">async</span> Task&lt;IActionResult&gt; <span class="hljs-title">CheckIfLeader</span>(<span class="hljs-params"></span>)</span>
+    {
+        _logger.LogInformation(<span class="hljs-string">"Starting CheckIfLeader endpoint..."</span>);
+
+        <span class="hljs-keyword">const</span> <span class="hljs-keyword">int</span> pingIntervalMs = <span class="hljs-number">50</span>; <span class="hljs-comment">// Intervalle de ping en millisecondes</span>
+
+        <span class="hljs-comment">// Obtenez l'ID du pod leader</span>
+        <span class="hljs-keyword">var</span> podLeaderID = <span class="hljs-keyword">await</span> ServiceMeshInfoProvider.PodLeaderId;
+        _logger.LogInformation(<span class="hljs-string">$"Pod Leader ID: <span class="hljs-subst">{podLeaderID}</span>"</span>);
+
+        <span class="hljs-keyword">try</span>
+        {
+            <span class="hljs-comment">// Utilisez HttpContext.RequestAborted comme CancellationToken</span>
+            <span class="hljs-keyword">var</span> cancellationToken = HttpContext.RequestAborted;
+
+            <span class="hljs-comment">// Appeler la route 'isLeader' en mode Broadcast</span>
+            <span class="hljs-keyword">var</span> res = <span class="hljs-keyword">await</span> RestController.Get(
+                <span class="hljs-keyword">new</span> GetRoutingRequest()
+                {
+                    TargetService = podLeaderID,
+                    Endpoint = <span class="hljs-string">$"Leader/IsLeader"</span>,
+                    Mode = LoadBalancingMode.Broadcast <span class="hljs-comment">// Utiliser Broadcast pour le ping</span>
+                });
+
+            <span class="hljs-comment">// Itérer sur les résultats asynchrones</span>
+            <span class="hljs-keyword">await</span> <span class="hljs-keyword">foreach</span> (<span class="hljs-keyword">var</span> result <span class="hljs-keyword">in</span> res!.ReadAllAsync(cancellationToken))
+            {
+                <span class="hljs-comment">// Vérifier la réponse</span>
+                <span class="hljs-keyword">if</span> (result.Content != <span class="hljs-literal">null</span> &amp;&amp; JsonConvert.DeserializeObject&lt;<span class="hljs-keyword">string</span>&gt;(result.Content) == <span class="hljs-string">"isLeader"</span>)
+                {
+                    _logger.LogInformation(<span class="hljs-string">"Pod leader confirmed as leader."</span>);
+                    <span class="hljs-keyword">return</span> Ok(<span class="hljs-string">"Pod leader is confirmed as the leader."</span>);
+                }
+                <span class="hljs-keyword">else</span>
+                {
+                    _logger.LogInformation(<span class="hljs-string">"Pod leader is not the leader."</span>);
+                    <span class="hljs-keyword">return</span> Problem(<span class="hljs-string">"Pod leader is not the leader."</span>);
+                }
+            }
+        }
+        <span class="hljs-keyword">catch</span> (Exception ex)
+        {
+            _logger.LogError(ex, <span class="hljs-string">$"Service is not available. Detailed error: <span class="hljs-subst">{ex.GetType().Name}</span> - <span class="hljs-subst">{ex.Message}</span>"</span>);
+            <span class="hljs-keyword">return</span> StatusCode(<span class="hljs-number">500</span>, <span class="hljs-string">"Service is not available"</span>);
+        }
+
+        <span class="hljs-comment">// Si aucune réponse n'est reçue, attendre et essayer à nouveau (en boucle)</span>
+        <span class="hljs-keyword">await</span> Task.Delay(pingIntervalMs, HttpContext.RequestAborted);
+
+        <span class="hljs-comment">// En cas d'absence de réponse, retournez une réponse par défaut</span>
+        <span class="hljs-keyword">return</span> StatusCode(<span class="hljs-number">500</span>, <span class="hljs-string">"No response from the leader check."</span>);
+    }
+</div></code></pre>
+<hr>
+<h2 id="synth%C3%A8se"><strong>Synthèse</strong></h2>
+<p>L'interopérabilité entre le <strong>Sidecar</strong> et le <strong>LeaderController</strong> du service STM repose sur des tactiques clés telles que la <strong>découverte des services</strong> et la <strong>gestion des interfaces</strong>. Ces approches favorisent une communication dynamique et flexible, essentielle au bon fonctionnement des microservices dans un environnement distribué.</p>
+<hr>
+<h2 id="question-2--quest-ce-que-linjection-de-d%C3%A9pendance-fournissez-des-exemples-de-lutilisation-de-linjection-de-d%C3%A9pendance-dans-un-des-microservices-du-projet-comment-linjection-de-d%C3%A9pendance-am%C3%A9liore-t-elle-la-testabilit%C3%A9-du-syst%C3%A8me"><strong>Question 2</strong> : Qu'est-ce que l'injection de dépendance? Fournissez des exemples de l'utilisation de l'injection de dépendance dans un des microservices du projet. Comment l'injection de dépendance améliore-t-elle la testabilité du système?</h2>
+<hr>
+<h1 id="d%C3%A9finition-de-linjection-de-d%C3%A9pendance">Définition de l'injection de dépendance</h1>
+<p>L'<strong>injection de dépendance</strong> (Dependency Injection, DI) est un modèle de conception appartenant au principe d'<strong>inversion de contrôle</strong> (Inversion of Control, IoC). Ce modèle consiste à déléguer la gestion des dépendances d'une classe à un composant externe, plutôt que de laisser cette classe les créer ou les gérer elle-même.</p>
+<p>Une <strong>dépendance</strong> est un objet dont une classe a besoin pour accomplir ses tâches. Avec l'injection de dépendance :</p>
+<ul>
+<li>Une classe ne dépend plus directement de la création ou de la configuration de cet objet.</li>
+<li>Les dépendances sont fournies depuis une source externe (comme un conteneur DI ou du code utilisateur).</li>
+<li>Cela favorise un code <strong>modulaire</strong>, <strong>maintenable</strong> et <strong>testable</strong>.</li>
+</ul>
+<hr>
+<h1 id="analyse--r%C3%B4le-de-linjection-de-d%C3%A9pendance-dans-stmclient-et-comparetimes-dans-le-service-tripcomparator">Analyse : Rôle de l'injection de dépendance dans <code>StmClient</code> et <code>CompareTimes</code> dans le service TripComparator</h1>
+<hr>
+<h2 id="1-stmclient"><strong>1. StmClient</strong></h2>
+<p>La classe <code>StmClient</code> utilise l'injection de dépendance pour gérer ses composants critiques.</p>
+<h3 id="d%C3%A9pendances-inject%C3%A9es-dans-stmclient"><strong>Dépendances injectées dans <code>StmClient</code></strong></h3>
+<ol>
+<li>
+<p><strong>ILogger<StmClient></strong> :</p>
+<ul>
+<li>Fournit un mécanisme centralisé pour enregistrer les logs, gérer les erreurs et suivre les événements importants.</li>
+</ul>
+</li>
+<li>
+<p><strong>IBackOffRetryPolicy<StmClient></strong> :</p>
+<ul>
+<li>Implémente une politique de retry avec un délai progressif pour les opérations critiques.</li>
+<li>Exemple : Réessaie jusqu'à 10 fois avec un délai croissant en cas d'échec.</li>
+</ul>
+</li>
+<li>
+<p><strong>IInfiniteRetryPolicy<StmClient></strong> :</p>
+<ul>
+<li>Implémente une politique de retry infini, garantissant que les opérations critiques aboutissent malgré des échecs temporaires.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h4 id="exemple-dinjection-de-d%C3%A9pendance-dans-stmclient"><strong>Exemple d'injection de dépendance dans <code>StmClient</code></strong></h4>
+<p>Le constructeur de la classe <code>StmClient</code> montre comment ces dépendances sont injectées via l'injection par constructeur :</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">StmClient</span> : <span class="hljs-title">IBusInfoProvider</span> 
+    
+    <span class="hljs-title">private</span> <span class="hljs-title">readonly</span> <span class="hljs-title">ILogger</span>&lt;<span class="hljs-title">StmClient</span>&gt; _<span class="hljs-title">logger</span>;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> IBackOffRetryPolicy&lt;StmClient&gt; _backOffRetry;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> IInfiniteRetryPolicy&lt;StmClient&gt; _infiniteRetry;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">StmClient</span>(<span class="hljs-params">
+        ILogger&lt;StmClient&gt; logger,
+        IBackOffRetryPolicy&lt;StmClient&gt; backOffRetry,
+        IInfiniteRetryPolicy&lt;StmClient&gt; infiniteRetry</span>)</span>
+    {
+        _logger = logger;
+        _backOffRetry = backOffRetry;
+        _infiniteRetry = infiniteRetry;
+    }
+</div></code></pre>
+<hr>
+<h3 id="configuration-dans-le-conteneur-dinjection-de-d%C3%A9pendances"><strong>Configuration dans le conteneur d'injection de dépendances</strong></h3>
+<p>Ces dépendances sont également enregistrées dans le conteneur DI. Par exemple, dans la méthode <code>ConfigureServices</code> :</p>
+<pre class="hljs"><code><div>services.AddSingleton&lt;IRouteTimeProvider, RouteTimeProviderClient&gt;();
+services.AddTransient&lt;IBusInfoProvider, StmClient&gt;();
+services.AddTransient&lt;IDataStreamWriteModel, DataStreamWriteModel&gt;();
+services.AddTransient&lt;CompareTimes&gt;();
+</div></code></pre>
+<hr>
+<h3 id="utilisation-des-d%C3%A9pendances-inject%C3%A9es"><strong>Utilisation des dépendances injectées</strong></h3>
 <ul>
 <li>
-<p><strong>Question 1</strong> Discuter de l'interopérabilité des microservices, tout en fournissant des exemples d'une ou plusieurs tactiques utilisées. Si vous pensez qu'aucune tactique n'est utilisée dans le code, nommez et décrivez une ou plusieurs tactiques qui pourraient être utilisées.</p>
-</li>
-<li>
-<p><strong>Question 2</strong> Qu'est-ce que l'injection de dépendance? Fournissez des exemples de l'utilisation de l'injection de dépendance dans un des microservices du projet. Comment l'injection de dépendance améliore-t-elle la testabilité du système?</p>
-</li>
-<li>
-<p><strong>Question 3</strong> : Dans le laboratoire, nous utilisons une technologie semblable à Kubernetes. Qu'est-ce que Kubernetes et en quoi cette technologie est-elle pertinente à la redondance ? Quels sont les éléments et les concepts de Kubernetes qui sont présents dans le projet du laboratoire ?</p>
+<p><strong>Gestion des échecs avec les politiques de retry</strong> :</p>
+<ul>
+<li>Exemple : Dans <code>GetBestBus</code>, la politique <code>InfiniteRetryPolicy</code> gère automatiquement les erreurs :<pre class="hljs"><code><div><span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> _infiniteRetry.ExecuteAsync(<span class="hljs-keyword">async</span> () =&gt; { 
+    <span class="hljs-comment">// Exécution d'une logique pour obtenir les données de STM ou STM2</span>
+});
+</div></code></pre>
 </li>
 </ul>
+</li>
+<li>
+<p><strong>Logger pour la surveillance et les diagnostics</strong> :</p>
+<ul>
+<li>Enregistre les erreurs ou les réponses non valides :<pre class="hljs"><code><div>_logger.LogWarning(<span class="hljs-string">"Ignored response from non-leader instance."</span>);
+</div></code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="2-comparetimes"><strong>2. CompareTimes</strong></h2>
+<p>La classe <code>CompareTimes</code> repose également sur l'injection de dépendance pour gérer les interactions avec les services et la logique métier.</p>
+<h3 id="d%C3%A9pendances-inject%C3%A9es-dans-comparetimes"><strong>Dépendances injectées dans <code>CompareTimes</code></strong></h3>
+<ol>
+<li>
+<p><strong>IRouteTimeProvider</strong> :</p>
+<ul>
+<li>Fournit le temps moyen de trajet en voiture.</li>
+<li>Exemple d'implémentation : <code>RouteTimeProviderClient</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>IBusInfoProvider</strong> :</p>
+<ul>
+<li>Interagit avec STM et STM2 pour :
+<ul>
+<li>Trouver le meilleur bus (<code>GetBestBus</code>).</li>
+<li>Démarrer le suivi d'un bus (<code>BeginTracking</code>).</li>
+<li>Obtenir les mises à jour de suivi (<code>GetTrackingUpdate</code>).</li>
+</ul>
+</li>
+<li>Exemple d'implémentation : <code>StmClient</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong>IDataStreamWriteModel</strong> :</p>
+<ul>
+<li>Permet d'écrire les mises à jour de position dans un flux de données.</li>
+</ul>
+</li>
+<li>
+<p><strong>ILogger<CompareTimes></strong> :</p>
+<ul>
+<li>Enregistre les états critiques et les exceptions pour un diagnostic rapide.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h4 id="exemple-dinjection-de-d%C3%A9pendance-dans-comparetimes"><strong>Exemple d'injection de dépendance dans <code>CompareTimes</code></strong></h4>
+<p>Le constructeur de la classe <code>CompareTimes</code> montre comment ces dépendances sont injectées via l'injection par constructeur :</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">CompareTimes</span> {
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> IRouteTimeProvider _routeTimeProvider;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> IBusInfoProvider _iBusInfoProvider;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> IDataStreamWriteModel _dataStreamWriteModel;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">readonly</span> ILogger&lt;CompareTimes&gt; _logger;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">CompareTimes</span>(<span class="hljs-params">
+        IRouteTimeProvider routeTimeProvider,
+        IBusInfoProvider iBusInfoProvider,
+        IDataStreamWriteModel dataStreamWriteModel,
+        ILogger&lt;CompareTimes&gt; logger</span>)</span>
+    {
+        _routeTimeProvider = routeTimeProvider;
+        _iBusInfoProvider = iBusInfoProvider;
+        _dataStreamWriteModel = dataStreamWriteModel;
+        _logger = logger;
+    }
+}
+</div></code></pre>
+<hr>
+<h3 id="enregistrement-des-d%C3%A9pendances-dans-configureservices-pour-comparetimes"><strong>Enregistrement des dépendances dans <code>ConfigureServices</code> pour <code>CompareTimes</code></strong></h3>
+<p>Pour que les dépendances soient injectées dans <code>CompareTimes</code>, elles doivent être enregistrées dans le conteneur d'injection de dépendances dans la méthode <code>ConfigureServices</code> de <code>Startup.cs</code> :</p>
+<pre class="hljs"><code><div><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">ConfigureServices</span>(<span class="hljs-params">IServiceCollection services</span>)</span>
+{
+    <span class="hljs-comment">// Enregistrement des services nécessaires</span>
+    services.AddSingleton&lt;IRouteTimeProvider, RouteTimeProviderClient&gt;(); <span class="hljs-comment">// Fournisseur de temps de trajet</span>
+    services.AddTransient&lt;IBusInfoProvider, StmClient&gt;(); <span class="hljs-comment">// Fournisseur d'informations sur les bus</span>
+    services.AddTransient&lt;IDataStreamWriteModel, DataStreamWriteModel&gt;(); <span class="hljs-comment">// Modèle d'écriture pour le flux</span>
+    services.AddTransient&lt;CompareTimes&gt;(); <span class="hljs-comment">// Enregistrement de la classe CompareTimes</span>
+}
+</div></code></pre>
+<hr>
+<h3 id="utilisation-des-d%C3%A9pendances-inject%C3%A9es"><strong>Utilisation des dépendances injectées</strong></h3>
+<ul>
+<li>
+<p><strong>Étapes principales</strong> :</p>
+<ol>
+<li>
+<p>Récupération du temps de trajet en voiture via <code>IRouteTimeProvider</code> :</p>
+<pre class="hljs"><code><div>_averageCarTravelTime = <span class="hljs-keyword">await</span> _routeTimeProvider.GetTravelTimeInSeconds(startingCoordinates, destinationCoordinates);
+</div></code></pre>
+</li>
+<li>
+<p>Recherche du meilleur bus via <code>IBusInfoProvider</code> :</p>
+<pre class="hljs"><code><div>_optimalBus = <span class="hljs-keyword">await</span> _iBusInfoProvider.GetBestBus(startingCoordinates, destinationCoordinates);
+</div></code></pre>
+</li>
+<li>
+<p>Suivi des bus via <code>IBusInfoProvider</code> :</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">await</span> _iBusInfoProvider.BeginTracking(_optimalBus);
+</div></code></pre>
+</li>
+<li>
+<p>Écriture dans un flux via <code>IDataStreamWriteModel</code> :</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">await</span> _dataStreamWriteModel.Produce(busPositionUpdated);
+</div></code></pre>
+</li>
+</ol>
+</li>
+<li>
+<p><strong>Logger pour le suivi des erreurs et des états</strong> :</p>
+<ul>
+<li>Exemple d'enregistrement de l'état actuel via Redis :<pre class="hljs"><code><div>_logger.LogInformation(<span class="hljs-string">$"Refreshed CurrentState: <span class="hljs-subst">{state}</span>"</span>);
+</div></code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h1 id="testabilit%C3%A9-gr%C3%A2ce-%C3%A0-linjection-de-d%C3%A9pendance">Testabilité grâce à l'injection de dépendance</h1>
+<h3 id="avantages-communs-pour-stmclient-et-comparetimes"><strong>Avantages communs pour <code>StmClient</code> et <code>CompareTimes</code></strong></h3>
+<ol>
+<li>
+<p><strong>Facilité d’isolation pour les tests unitaires</strong> :</p>
+<ul>
+<li>Les dépendances comme <code>ILogger</code>, <code>IBackOffRetryPolicy</code>, <code>IInfiniteRetryPolicy</code>, <code>IRouteTimeProvider</code>, et <code>IBusInfoProvider</code> sont injectées via des interfaces.</li>
+<li>Cela permet d’utiliser des <strong>mocks</strong> ou des <strong>stubs</strong> pour simuler les comportements attendus, sans dépendre des implémentations réelles ou des services externes.</li>
+</ul>
+</li>
+<li>
+<p><strong>Simulation de scénarios complexes</strong> :</p>
+<ul>
+<li>Les politiques de retry (comme <code>BackOffRetryPolicy</code>) peuvent être simulées pour valider la gestion des pannes dans des scénarios complexes (pannes réseau, indisponibilité des services).</li>
+<li>Exemple pour <code>StmClient</code> : Simuler une défaillance temporaire des services STM/STM2 et valider que les politiques de retry réagissent correctement.</li>
+</ul>
+</li>
+<li>
+<p><strong>Validation des interactions avec les dépendances</strong> :</p>
+<ul>
+<li>Grâce à des frameworks comme Moq ou NSubstitute, il est possible de vérifier que les dépendances injectées sont appelées avec les bons paramètres et au bon moment.</li>
+<li>Exemple pour <code>CompareTimes</code> : Valider que <code>IDataStreamWriteModel</code> écrit correctement dans le flux après le suivi d’un bus.</li>
+</ul>
+</li>
+<li>
+<p><strong>Réduction de la dépendance aux systèmes externes</strong> :</p>
+<ul>
+<li>Les services comme <code>RouteTimeProviderClient</code> ou <code>StmClient</code> peuvent être remplacés par des implémentations simulées, ce qui réduit la complexité et les temps d’exécution des tests.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="exemples-sp%C3%A9cifiques"><strong>Exemples spécifiques</strong></h3>
+<h4 id="pour-stmclient"><strong>Pour <code>StmClient</code></strong></h4>
+<ul>
+<li>Lors d’un test, injecter un mock pour <code>IInfiniteRetryPolicy</code> permet de simuler un service STM qui échoue plusieurs fois avant de réussir. Cela valide que <code>StmClient</code> continue d’exécuter ses tâches malgré les pannes temporaires.</li>
+</ul>
+<h4 id="pour-comparetimes"><strong>Pour <code>CompareTimes</code></strong></h4>
+<ul>
+<li>En remplaçant <code>IRouteTimeProvider</code> par un mock, il est possible de tester comment <code>CompareTimes</code> réagit à des durées de trajet simulées (par exemple, un trajet en voiture plus court qu’un trajet en bus).</li>
+</ul>
+<hr>
+<h3 id="impact-sur-la-qualit%C3%A9-et-la-maintenance-du-code"><strong>Impact sur la qualité et la maintenance du code</strong></h3>
+<ol>
+<li>
+<p><strong>Rapidité des tests</strong> :</p>
+<ul>
+<li>Les mocks permettent d’éviter les appels réseau ou les interactions coûteuses, rendant les tests plus rapides et fiables.</li>
+</ul>
+</li>
+<li>
+<p><strong>Débogage facilité</strong> :</p>
+<ul>
+<li>En isolant les dépendances, les tests ciblent directement la logique métier, ce qui simplifie l’identification des bugs.</li>
+</ul>
+</li>
+<li>
+<p><strong>Flexibilité pour les changements futurs</strong> :</p>
+<ul>
+<li>Les dépendances injectées peuvent être remplacées par de nouvelles implémentations sans modifier le code des classes <code>StmClient</code> ou <code>CompareTimes</code>.</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="synth%C3%A8se"><strong>Synthèse</strong></h2>
+<p>L'injection de dépendance dans <code>StmClient</code> et <code>CompareTimes</code> joue un rôle crucial pour :</p>
+<ul>
+<li>Réduire le couplage.</li>
+<li>Améliorer la testabilité.</li>
+<li>Gérer efficacement les erreurs et les échecs temporaires.</li>
+<li>Rendre les classes plus flexibles et extensibles.</li>
+</ul>
+<p>Ces avantages permettent à <code>StmClient</code> et <code>CompareTimes</code> de se concentrer sur leur logique métier principale, tout en déléguant la gestion des aspects spécifiques (retry, logging, interactions avec les services) à des composants dédiés.</p>
+<h2 id="question-3--dans-le-laboratoire-nous-utilisons-une-technologie-semblable-%C3%A0-kubernetes-quest-ce-que-kubernetes-et-en-quoi-cette-technologie-est-elle-pertinente-%C3%A0-la-redondance--quels-sont-les-%C3%A9l%C3%A9ments-et-les-concepts-de-kubernetes-qui-sont-pr%C3%A9sents-dans-le-projet-du-laboratoire"><strong>Question 3</strong> : Dans le laboratoire, nous utilisons une technologie semblable à Kubernetes. Qu'est-ce que Kubernetes et en quoi cette technologie est-elle pertinente à la redondance ? Quels sont les éléments et les concepts de Kubernetes qui sont présents dans le projet du laboratoire ?</h2>
+<hr>
+<h1 id="kubernetes--une-plateforme-pour-orchestrer-les-conteneurs">Kubernetes : Une plateforme pour orchestrer les conteneurs</h1>
+<p><strong>Kubernetes</strong> est une plateforme open-source qui automatise le déploiement, la gestion et l'évolutivité des applications conteneurisées. Elle permet d'orchestrer les conteneurs dans un cluster composé de plusieurs machines (physiques ou virtuelles), garantissant la fiabilité, la scalabilité et la performance des applications.</p>
+<hr>
+<h2 id="concepts-cl%C3%A9s-de-kubernetes">Concepts clés de Kubernetes</h2>
+<h3 id="1-pod">1. <strong>Pod</strong></h3>
+<ul>
+<li>L’unité de base dans Kubernetes est le <strong>Pod</strong>, qui regroupe un ou plusieurs conteneurs partageant des ressources telles que le réseau et le stockage.</li>
+</ul>
+<h3 id="2-replicasets">2. <strong>ReplicaSets</strong></h3>
+<ul>
+<li>Les <strong>ReplicaSets</strong> s’assurent qu’un nombre défini de copies (<em>réplicas</em>) d’un Pod est toujours actif.</li>
+<li>Si un Pod échoue ou devient indisponible, Kubernetes crée automatiquement un nouveau pour le remplacer.</li>
+<li>Cela garantit une disponibilité continue des instances fonctionnelles.</li>
+</ul>
+<h3 id="3-deployments">3. <strong>Deployments</strong></h3>
+<ul>
+<li>Les <strong>Deployments</strong> permettent de gérer les mises à jour et le déploiement d’applications de manière déclarative, facilitant les transitions entre différentes versions.</li>
+</ul>
+<hr>
+<h2 id="fonctionnalit%C3%A9s-pertinentes-%C3%A0-la-redondance">Fonctionnalités pertinentes à la redondance</h2>
+<h3 id="1-gestion-des-replicasets">1. <strong>Gestion des ReplicaSets</strong></h3>
+<ul>
+<li>Kubernetes maintient automatiquement le nombre requis de réplicas pour un Pod.</li>
+<li>En cas de panne d’un Pod, un nouveau est instantanément créé pour le remplacer.</li>
+<li>Cette approche garantit que les demandes des utilisateurs sont toujours satisfaites.</li>
+</ul>
+<h3 id="2-%C3%A9quilibrage-de-charge">2. <strong>Équilibrage de charge</strong></h3>
+<ul>
+<li>Kubernetes distribue le trafic réseau entre les Pods disponibles via un service d’équilibrage de charge intégré.</li>
+<li>Cela répartit efficacement la charge et évite de surcharger un seul Pod.</li>
+<li>Si un Pod devient indisponible, Kubernetes redirige automatiquement le trafic vers les Pods restants.</li>
+</ul>
+<h3 id="3-surveillance-et-auto-r%C3%A9cup%C3%A9ration">3. <strong>Surveillance et auto-récupération</strong></h3>
+<ul>
+<li>Kubernetes surveille en permanence l’état des Pods et des nœuds.</li>
+<li>Si un Pod, un conteneur ou un nœud entier tombe en panne, Kubernetes redémarre ou recrée automatiquement l’instance concernée sur un autre nœud.</li>
+<li>Cela garantit une <strong>disponibilité continue</strong> des services.</li>
+</ul>
+<hr>
+<h1 id="similitudes-entre-kubernetes-et-nodecontroller">Similitudes entre Kubernetes et NodeController</h1>
+<p>Le <strong>NodeController</strong> partage plusieurs concepts et fonctionnalités similaires à Kubernetes, bien qu'il ne l'utilise pas directement. Voici une analyse des similitudes clés :</p>
+<hr>
+<h2 id="concepts-partag%C3%A9s"><strong>Concepts Partagés</strong></h2>
+<h3 id="1-terminologie-des-pods">1. <strong>Terminologie des Pods</strong></h3>
+<ul>
+<li><strong>Kubernetes</strong> : Les Pods sont les unités de base qui regroupent un ou plusieurs conteneurs partageant des ressources comme le réseau et le stockage.</li>
+<li><strong>NodeController</strong> : Les <strong>pod types</strong> et <strong>pod instances</strong> imitent cette idée en regroupant plusieurs services (conteneurs) sous une même entité. Cela permet de gérer les dépendances, le scaling et le statut des services comme un tout.</li>
+</ul>
+<h3 id="2-services">2. <strong>Services</strong></h3>
+<ul>
+<li><strong>Kubernetes</strong> : Les services permettent de connecter des Pods entre eux et d’exposer des applications à l’extérieur du cluster. Ils sont souvent associés à des configurations DNS.</li>
+<li><strong>NodeController</strong> : Les services sont définis comme des <strong>service types</strong>. Ils contiennent des informations DNS et peuvent être regroupés ou reliés à d'autres services à travers des <strong>Pod_Links</strong>. Le NodeController utilise ces services pour gérer le routage et la découverte.</li>
+</ul>
+<hr>
+<h2 id="gestion-des-conteneurs"><strong>Gestion des Conteneurs</strong></h2>
+<h3 id="1-redondance-et-scalabilit%C3%A9">1. <strong>Redondance et Scalabilité</strong></h3>
+<ul>
+<li><strong>Kubernetes</strong> : Kubernetes gère la redondance avec des <strong>ReplicaSets</strong>, permettant de maintenir un certain nombre de Pods actifs. Il offre également un mécanisme de scaling horizontal (autoscaling).</li>
+<li><strong>NodeController</strong> : Il permet de définir le nombre de réplicas d’un pod via des labels comme <code>Replicas</code>. Lorsqu’un pod échoue, une nouvelle instance est créée pour maintenir l'intégrité du système.</li>
+</ul>
+<h3 id="2-sidecars">2. <strong>Sidecars</strong></h3>
+<ul>
+<li><strong>Kubernetes</strong> : Kubernetes utilise souvent des sidecars pour ajouter des fonctionnalités complémentaires (ex. : monitoring, logs, etc.).</li>
+<li><strong>NodeController</strong> : Les conteneurs secondaires d’un pod sont considérés comme des <strong>sidecars</strong>, avec des DNS privés par défaut. Cela simplifie l’ajout de fonctionnalités sans modifier directement le conteneur principal.</li>
+</ul>
+<hr>
+<h2 id="routage-et-d%C3%A9couverte"><strong>Routage et Découverte</strong></h2>
+<h3 id="1-r%C3%A8gles-dns">1. <strong>Règles DNS</strong></h3>
+<ul>
+<li><strong>Kubernetes</strong> : Les configurations DNS sont utilisées pour limiter ou permettre l’accès à certains services dans un cluster.</li>
+<li><strong>NodeController</strong> : Les labels comme <code>DNS: Private</code>, <code>DNS: Public</code>, et <code>DNS: Partial</code> définissent les règles de routage et d’accessibilité entre les services.</li>
+</ul>
+<h3 id="2-%C3%A9quilibrage-de-charge">2. <strong>Équilibrage de Charge</strong></h3>
+<ul>
+<li><strong>Kubernetes</strong> : Kubernetes inclut un mécanisme d’équilibrage de charge au niveau réseau et application, redirigeant les requêtes vers les Pods disponibles.</li>
+<li><strong>NodeController</strong> : Offre deux modes d'équilibrage de charge :
+<ul>
+<li><strong>RoundRobin</strong> : Répartit les requêtes de manière séquentielle entre les services disponibles.</li>
+<li><strong>Broadcast</strong> : Envoie une requête à toutes les instances de service disponibles, ce qui est utile pour des cas spécifiques où tous les services doivent traiter la même demande.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="avantages-et-inconv%C3%A9nients"><strong>Avantages et Inconvénients</strong></h2>
+<h3 id="similitudes-dans-les-avantages">Similitudes dans les Avantages</h3>
+<ul>
+<li><strong>Multi-conteneurs (Pods)</strong> :
+<ul>
+<li><strong>Kubernetes</strong> : Simplifie la gestion de services interdépendants.</li>
+<li><strong>NodeController</strong> : Permet de regrouper dynamiquement des conteneurs pour des scénarios créatifs comme l’élection de leaders ou le partage de fonctionnalités via des sidecars.</li>
+</ul>
+</li>
+<li><strong>Scalabilité</strong> :
+<ul>
+<li>Les deux systèmes permettent de gérer dynamiquement les réplicas pour répondre à la charge.</li>
+</ul>
+</li>
+</ul>
+<h3 id="similitudes-dans-les-inconv%C3%A9nients">Similitudes dans les Inconvénients</h3>
+<ul>
+<li><strong>Complexité</strong> :
+<ul>
+<li>Les deux introduisent une couche de complexité supplémentaire, nécessitant une configuration fine et une compréhension des interactions entre services.</li>
+</ul>
+</li>
+<li><strong>Problèmes liés aux pods multi-conteneurs</strong> :
+<ul>
+<li>Si un conteneur échoue, tous les autres conteneurs du pod sont affectés, ce qui peut entraîner un gaspillage de ressources.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="autres-points-cl%C3%A9s"><strong>Autres Points Clés</strong></h2>
+<h3 id="1-volumes-partag%C3%A9s">1. <strong>Volumes Partagés</strong></h3>
+<ul>
+<li>Similaire à Kubernetes, le NodeController permet de partager des volumes entre les réplicas avec le label <code>SHARE_VOLUMES</code>.</li>
+</ul>
+<h3 id="2-alias-pour-services">2. <strong>Alias pour Services</strong></h3>
+<ul>
+<li>NodeController propose une fonctionnalité semblable aux services de Kubernetes en utilisant des alias pour regrouper plusieurs instances sous un seul nom logique.</li>
+</ul>
+<h3 id="3-modes-de-routage">3. <strong>Modes de Routage</strong></h3>
+<ul>
+<li>NodeController permet des routages avancés basés sur des configurations DNS et des stratégies de service mesh, rappelant les fonctionnalités de Kubernetes Ingress et ServiceMesh.</li>
+</ul>
+<hr>
+<h2 id="synth%C3%A8se"><strong>Synthèse</strong></h2>
+<p>Bien que le <strong>NodeController</strong> ne soit pas basé sur Kubernetes, il s'en inspire fortement dans la gestion des conteneurs, des pods, du routage, et de la découverte des services. Cette approche permet de bénéficier des concepts avancés de Kubernetes tout en adaptant la complexité à des environnements plus spécifiques ou contrôlés.</p>
 <h1 id="conclusion">Conclusion</h1>
-<blockquote>
-<p>TODO: insérer votre conclusion</p>
-</blockquote>
-<ul>
-<li>N'oubliez pas d'effacer les TODO.</li>
-<li>Générer une version PDF de ce document pour votre remise finale.</li>
-<li>Assurez-vous du bon format de votre rapport PDF.</li>
-<li>Créer un tag git avec la commande &quot;git tag laboratoire-2&quot;.</li>
-</ul>
-<p>\newpage</p>
 <h1 id="annexes">Annexes</h1>
 
-            
-            
-        </body>
-        </html>
+</body>
+</html>
