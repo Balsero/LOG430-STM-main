@@ -683,7 +683,6 @@ Le **NodeController** partage plusieurs concepts et fonctionnalités similaires 
 
 ### 3. **Modes de Routage**
 - NodeController permet des routages avancés basés sur des configurations DNS et des stratégies de service mesh, rappelant les fonctionnalités de Kubernetes Ingress et ServiceMesh.
-
 ---
 
 ## **Synthèse**
@@ -692,5 +691,10 @@ Bien que le **NodeController** ne soit pas basé sur Kubernetes, il s'en inspire
 
 # Conclusion
 
+En conclusion, ce laboratoire visait à améliorer la disponibilité de nos services en mettant en place une infrastructure résiliente capable de résister à des perturbations fréquentes, simulées par un outil similaire à Chaos Monkey. Nous avons exploré diverses perspectives architecturales, notamment les vues de type module, composant et connecteur, ainsi que les vues d'allocation, pour concevoir un système de redondance efficace. Les diagrammes de séquence avant et après l'implémentation de nos stratégies de redondance ont illustré les améliorations apportées. Nous avons également évalué des alternatives et abordé des questions clés concernant l'interopérabilité, les concepts de Kubernetes liés au projet et l'utilisation de l'injection de dépendance.
+
+Bien que tous les objectifs n'aient pas été pleinement atteints, les résultats obtenus sont globalement satisfaisants. Les messages de suivi s'actualisent correctement, le temps de réponse moyen est inférieur à 250 ms, et la durée des trajets en voiture s'affiche avec précision. Cependant, le critère de stabilité, mesuré par le temps de rétablissement du système, dépasse légèrement les 250 ms fixés. Cette observation souligne la nécessité d'optimiser davantage notre infrastructure pour améliorer la résilience et la réactivité du système face aux perturbations.
+
+En somme, ce laboratoire a permis de renforcer notre compréhension des architectures résilientes et des pratiques essentielles pour assurer une haute disponibilité des services, tout en identifiant des axes d'amélioration pour atteindre une stabilité optimale.
 
 # Annexes
