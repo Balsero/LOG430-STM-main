@@ -53,10 +53,15 @@ namespace Configuration
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             // Démarrer le ping echo avant de lancer l'application
             var cancellationTokenSource = new CancellationTokenSource();
-            Task.Run(() => StartPingingRouteTimeProvider(app.Services, logger, cancellationTokenSource.Token));
+            
+            var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
+
+            await mqController.CallBack(cancellationTokenSource.Token);
 
             // Lancer l'application
             await app.RunAsync();
+
+            
 
             // Annuler le ping quand l'application se termine
             cancellationTokenSource.Cancel();
@@ -89,6 +94,8 @@ namespace Configuration
             services.AddScoped<IDataStreamWriteModel, MassTransitRabbitMqClient>();
 
             services.AddScoped<IBusInfoProvider, StmClient>();
+
+            services.AddScoped<TripComparatorMqController>();
         }
 
         private static void ConfigureMassTransit(IServiceCollection services)
