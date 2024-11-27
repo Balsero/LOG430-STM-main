@@ -110,7 +110,7 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
         }
 
         var redisDb = RedisConnectionController.GetDatabase();
-        RedisConnectionController.TestConnection();
+        
 
         string processingLockKey = "TripComparator:ProcessingLock";
         string statusKey = "TripComparator:ConsumeStatus";
@@ -173,10 +173,42 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred during ProcessInLoop. Retrying...");
-                await Task.Delay(50, cancellationToken);
+                
             }
+
+            await Task.Delay(50, cancellationToken);
         }
 
     }
     private string RemoveWhiteSpaces(string s) => s.Replace(" ", "");
+
+    public async Task CallBack(CancellationToken cancellationToken)
+    {
+        
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_TC");
+            string statusKey = "TripComparator:ConsumeStatus";
+            var redisDb = RedisConnectionController.GetDatabase();
+            var consumeStatus = await redisDb.StringGetAsync(statusKey);
+
+            if (isLeader != "true")
+            {
+                _logger.LogInformation("Not a leader, skipping CallBack.");
+                return;
+            }
+
+            if (consumeStatus != "Called")
+            {
+                _logger.LogInformation("Consume() has not been called yet. Waiting...");
+                await Task.Delay(50, cancellationToken);
+                continue;
+            }
+
+            _logger.LogInformation("CallBack s'appelle avec succes");
+        }
+
+        await Task.Delay(50, cancellationToken);
+    }
 }

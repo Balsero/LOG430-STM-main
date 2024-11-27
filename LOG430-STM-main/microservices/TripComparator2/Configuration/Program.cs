@@ -53,15 +53,17 @@ namespace Configuration
 
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
-            // Démarrer le ping echo avant de lancer l'application
+            // Dï¿½marrer le ping echo avant de lancer l'application
             var cancellationTokenSource = new CancellationTokenSource();
+            
+            var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
 
-            await mqController.ProcessInLoop(cancellationTokenSource.Token);
-
-            Task.Run(() => StartPingingRouteTimeProvider(app.Services, logger, cancellationTokenSource.Token));
+            await mqController.CallBack(cancellationTokenSource.Token);
 
             // Lancer l'application
             await app.RunAsync();
+
+            
 
             // Annuler le ping quand l'application se termine
             cancellationTokenSource.Cancel();
@@ -94,7 +96,8 @@ namespace Configuration
             services.AddScoped<IDataStreamWriteModel, MassTransitRabbitMqClient>();
 
             services.AddScoped<IBusInfoProvider, StmClient>();
-            services.AddScoped<TripComparatorMqController, TripComparatorMqController>();
+
+            services.AddScoped<TripComparatorMqController>();
         }
 
         private static void ConfigureMassTransit(IServiceCollection services)
@@ -159,10 +162,10 @@ namespace Configuration
                             Mode = LoadBalancingMode.RoundRobin // Mode RoundRobin pour le ping echo
                         });
 
-                    // Itérer sur les résultats asynchrones
+                    // Itï¿½rer sur les rï¿½sultats asynchrones
                     await foreach (var result in res!.ReadAllAsync())
                     {
-                        // Vérifier si le service est en vie
+                        // Vï¿½rifier si le service est en vie
                         if (JsonConvert.DeserializeObject<string>(result.Content) == "isAlive")
                         {
                                // on fait quand c'est Alive
@@ -172,7 +175,7 @@ namespace Configuration
                             
                             logger.LogInformation("RouteTimeProvider is not responding.");
                         }
-                        break; // On a vérifié la première réponse, on peut sortir
+                        break; // On a vï¿½rifiï¿½ la premiï¿½re rï¿½ponse, on peut sortir
                     }
                 }
                 catch (Exception ex)

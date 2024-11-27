@@ -53,12 +53,12 @@ namespace Configuration
 
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
             var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
-            // Démarrer le ping echo avant de lancer l'application
+            // Dï¿½marrer le ping echo avant de lancer l'application
             var cancellationTokenSource = new CancellationTokenSource();
 
-            
-            await mqController.ProcessInLoop(cancellationTokenSource.Token);
+            var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
 
+            await mqController.CallBack(cancellationTokenSource.Token);
             // Lancer l'application
             await app.RunAsync();
 
