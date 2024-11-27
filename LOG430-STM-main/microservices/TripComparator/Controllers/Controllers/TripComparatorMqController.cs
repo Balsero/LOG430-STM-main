@@ -117,6 +117,7 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
         string startingKey = "TripComparator:StartingCoordinates";
         string destinationKey = "TripComparator:DestinationCoordinates";
 
+
         while (!cancellationToken.IsCancellationRequested)
         {
             // Attendre que le verrou soit libéré par Consume()

@@ -14,6 +14,7 @@ using ServiceMeshHelper;
 using ServiceMeshHelper.BusinessObjects.InterServiceRequests;
 using ServiceMeshHelper.BusinessObjects;
 using ServiceMeshHelper.Controllers;
+using Microsoft.Extensions.DependencyInjection;
 
 
 
@@ -51,8 +52,12 @@ namespace Configuration
             app.MapControllers();
 
             var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
             // Démarrer le ping echo avant de lancer l'application
             var cancellationTokenSource = new CancellationTokenSource();
+
+            await mqController.ProcessInLoop(cancellationTokenSource.Token);
+
             Task.Run(() => StartPingingRouteTimeProvider(app.Services, logger, cancellationTokenSource.Token));
 
             // Lancer l'application
@@ -89,6 +94,7 @@ namespace Configuration
             services.AddScoped<IDataStreamWriteModel, MassTransitRabbitMqClient>();
 
             services.AddScoped<IBusInfoProvider, StmClient>();
+            services.AddScoped<TripComparatorMqController, TripComparatorMqController>();
         }
 
         private static void ConfigureMassTransit(IServiceCollection services)

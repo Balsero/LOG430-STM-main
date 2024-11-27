@@ -18,6 +18,7 @@ namespace RouteTimeProvider
             // Configuration de Redis
             var redisHost = Environment.GetEnvironmentVariable("REDIS_HOST") ?? "localhost";
             var redisPort = Environment.GetEnvironmentVariable("REDIS_PORT") ?? "6379";
+            Console.WriteLine($"Connecting to Redis at {redisHost}:{redisPort}");
             var redis = ConnectionMultiplexer.Connect($"{redisHost}:{redisPort}");
             var redisDb = redis.GetDatabase();
             var redisService = new RedisService(redisDb);
