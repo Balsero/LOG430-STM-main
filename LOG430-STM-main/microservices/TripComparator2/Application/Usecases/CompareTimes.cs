@@ -34,6 +34,7 @@ namespace Application.Usecases
         public async Task<Channel<IBusPositionUpdated>> BeginComparingBusAndCarTime(string startingCoordinates, string destinationCoordinates)
         {
             var redisDb = RedisConnectionManager.GetDatabase();
+            const string travelTimeKey = "TripComparator:CurrentTime";
             // Fonction locale pour rafraîchir l'état
             async Task<string> RefreshStateAsync()
             {
@@ -44,6 +45,7 @@ namespace Application.Usecases
 
             // Récupérer l'état initial
             string currentState = await RefreshStateAsync();
+            
 
             _logger.LogInformation($"Initial CurrentState: {currentState}");
 
@@ -52,6 +54,11 @@ namespace Application.Usecases
             {
                 _logger.LogInformation("Executing GetTravelTimeInSeconds...");
                 _averageCarTravelTime = await _routeTimeProvider.GetTravelTimeInSeconds(startingCoordinates, destinationCoordinates);
+
+                await redisDb.StringSetAsync(travelTimeKey, _averageCarTravelTime.ToString());
+
+
+
 
                 if (_averageCarTravelTime < 1)
                 {
@@ -134,7 +141,7 @@ namespace Application.Usecases
 
                     var busPosition = new BusPosition()
                     {
-                        Message = trackingResult.Message + $"\nCar: {_averageCarTravelTime} seconds",
+                        Message = trackingResult.Message + $"\nCar: { await redisDb.StringGetAsync("TripComparator:CurrentTime")} seconds",
                         Seconds = trackingResult.Duration,
                     };
 

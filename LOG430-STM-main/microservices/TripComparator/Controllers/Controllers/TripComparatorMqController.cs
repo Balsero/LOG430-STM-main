@@ -107,25 +107,21 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
     {
         _logger.LogInformation("Starting ConsumeAlternative to monitor leadership status...");
 
-        bool isLeader = false;
-
-        // Boucle pour surveiller l'état de la variable d'environnement
-        while (!cancellationToken.IsCancellationRequested && !isLeader)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
                 // Vérifiez l'état de la variable d'environnement
-                var leaderStatus = Environment.GetEnvironmentVariable("IS_LEADER_TC");
-
-                if (leaderStatus == "true")
+                if (IsLeader())
                 {
                     _logger.LogInformation("This service is now the Leader. Exiting loop...");
-                    isLeader = true; // Sortir de la boucle
+
+                    // Exécuter le CallBack immédiatement après avoir détecté le rôle de Leader
+                    await CallBack();
+                    break; // Sortir de la boucle
                 }
-                else
-                {
-                    _logger.LogInformation("Not a Leader yet. Retrying...");
-                }
+
+                _logger.LogDebug("Not a Leader yet. Retrying...");
             }
             catch (Exception ex)
             {
@@ -133,19 +129,11 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
             }
 
             // Attendre un intervalle avant de vérifier à nouveau
-            await Task.Delay(50, cancellationToken); // Vérifie toutes les 1000 ms
-        }
-
-        if (isLeader)
-        {
-            // Appeler CallBack après être sorti de la boucle
-            _logger.LogInformation("Calling CallBack now...");
-            await CallBack();
+            await Task.Delay(50, cancellationToken); // Ajustez cet intervalle en fonction de vos besoins
         }
 
         _logger.LogInformation("ConsumeAlternative monitoring stopped.");
     }
-    private string RemoveWhiteSpaces(string s) => s.Replace(" ", "");
 
     public async Task CallBack()
     {
@@ -154,50 +142,47 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
         var redisDb = RedisConnectionController.GetDatabase();
 
         // Clés Redis
-        string statusKey = "TripComparator:ConsumeStatus";
-        string startingKey = "TripComparator:StartingCoordinates";
-        string destinationKey = "TripComparator:DestinationCoordinates";
+        const string statusKey = "TripComparator:ConsumeStatus";
+        const string startingKey = "TripComparator:StartingCoordinates";
+        const string destinationKey = "TripComparator:DestinationCoordinates";
 
         try
         {
-            // Lire l'état dans Redis
-            var consumeStatus = await redisDb.StringGetAsync(statusKey);
+            // Lire plusieurs valeurs Redis en une seule requête
+            var redisValues = await redisDb.StringGetAsync(new RedisKey[] { statusKey, startingKey, destinationKey });
 
-            // Lire les coordonnées
-            var storedStartingCoordinates = await redisDb.StringGetAsync(startingKey);
-            var storedDestinationCoordinates = await redisDb.StringGetAsync(destinationKey);
+            // Vérification des valeurs Redis
+            var consumeStatus = redisValues[0];
+            var storedStartingCoordinates = redisValues[1];
+            var storedDestinationCoordinates = redisValues[2];
 
-            // Vérification des coordonnées
             if (!storedStartingCoordinates.HasValue || !storedDestinationCoordinates.HasValue)
             {
                 _logger.LogWarning("Coordinates are missing in Redis. Skipping CallBack execution.");
                 return; // Quitter si les coordonnées sont manquantes
             }
 
-            // Vérification du statut
-            if (consumeStatus == "Called")
-            {
-                _logger.LogInformation("This service is the Leader. Executing CallBack logic...");
-
-                // Lancer la comparaison des temps
-                var producer = await _compareTimes.BeginComparingBusAndCarTime(
-                    storedStartingCoordinates.ToString(),
-                    storedDestinationCoordinates.ToString()
-                );
-
-                // Tâches principales avec politiques de retry
-                _ = _infiniteRetryPolicy.ExecuteAsync(async () =>
-                    await _compareTimes.PollTrackingUpdate(producer.Writer)
-                );
-
-                _ = _backOffRetryPolicy.ExecuteAsync(async () =>
-                    await _compareTimes.WriteToStream(producer.Reader)
-                );
-            }
-            else
+            if (consumeStatus != "Called")
             {
                 _logger.LogInformation("Not a Leader or status is not 'Called'. Skipping CallBack.");
+                return; // Quitter si le statut n'est pas 'Called'
             }
+
+            _logger.LogInformation("This service is the Leader. Executing CallBack logic...");
+
+            // Exécuter les fonctions principales
+            var producer = await _compareTimes.BeginComparingBusAndCarTime(
+                storedStartingCoordinates.ToString(),
+                storedDestinationCoordinates.ToString()
+            );
+
+            _ = _infiniteRetryPolicy.ExecuteAsync(async () =>
+                await _compareTimes.PollTrackingUpdate(producer.Writer)
+            );
+
+            _ = _backOffRetryPolicy.ExecuteAsync(async () =>
+                await _compareTimes.WriteToStream(producer.Reader)
+            );
         }
         catch (Exception ex)
         {
@@ -206,5 +191,16 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
 
         _logger.LogInformation("CallBack monitoring stopped.");
     }
+
+    private bool IsLeader()
+    {
+        // Encapsulez la logique pour vérifier le rôle de Leader
+        var leaderStatus = Environment.GetEnvironmentVariable("IS_LEADER_TC");
+        return leaderStatus == "true";
+    }
+
+    private string RemoveWhiteSpaces(string s) => s.Replace(" ", "");
+
+    
 
 }
