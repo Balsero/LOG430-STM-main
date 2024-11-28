@@ -1,9 +1,12 @@
 ﻿using Application.Interfaces.Policies;
 using Application.Usecases;
 using MassTransit;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MqContracts;
 using StackExchange.Redis;
+using System.Threading.Tasks;
 
 
 
@@ -100,65 +103,89 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
         }
     }
 
-    public async Task ProcessInLoop(CancellationToken cancellationToken)
+    public async Task ConsumeAlternative(CancellationToken cancellationToken)
     {
-        var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_TC");
-        if (isLeader != "true")
+        _logger.LogInformation("Starting ConsumeAlternative to monitor leadership status...");
+
+        bool isLeader = false;
+
+        // Boucle pour surveiller l'état de la variable d'environnement
+        while (!cancellationToken.IsCancellationRequested && !isLeader)
         {
-            _logger.LogInformation("Not a leader, skipping ProcessInLoop.");
-            return;
+            try
+            {
+                // Vérifiez l'état de la variable d'environnement
+                var leaderStatus = Environment.GetEnvironmentVariable("IS_LEADER_TC");
+
+                if (leaderStatus == "true")
+                {
+                    _logger.LogInformation("This service is now the Leader. Exiting loop...");
+                    isLeader = true; // Sortir de la boucle
+                }
+                else
+                {
+                    _logger.LogInformation("Not a Leader yet. Retrying...");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while monitoring leadership status.");
+            }
+
+            // Attendre un intervalle avant de vérifier à nouveau
+            await Task.Delay(50, cancellationToken); // Vérifie toutes les 1000 ms
         }
 
-        var redisDb = RedisConnectionController.GetDatabase();
-        
+        if (isLeader)
+        {
+            // Appeler CallBack après être sorti de la boucle
+            _logger.LogInformation("Calling CallBack now...");
+            await CallBack();
+        }
 
-        string processingLockKey = "TripComparator:ProcessingLock";
+        _logger.LogInformation("ConsumeAlternative monitoring stopped.");
+    }
+    private string RemoveWhiteSpaces(string s) => s.Replace(" ", "");
+
+    public async Task CallBack()
+    {
+        _logger.LogInformation("Starting CallBack monitoring...");
+
+        var redisDb = RedisConnectionController.GetDatabase();
+
+        // Clés Redis
         string statusKey = "TripComparator:ConsumeStatus";
         string startingKey = "TripComparator:StartingCoordinates";
         string destinationKey = "TripComparator:DestinationCoordinates";
 
-
-        while (!cancellationToken.IsCancellationRequested)
+        try
         {
-            // Attendre que le verrou soit libéré par Consume()
-            var isLocked = await redisDb.StringGetAsync(processingLockKey);
-            if (isLocked.HasValue)
+            // Lire l'état dans Redis
+            var consumeStatus = await redisDb.StringGetAsync(statusKey);
+
+            // Lire les coordonnées
+            var storedStartingCoordinates = await redisDb.StringGetAsync(startingKey);
+            var storedDestinationCoordinates = await redisDb.StringGetAsync(destinationKey);
+
+            // Vérification des coordonnées
+            if (!storedStartingCoordinates.HasValue || !storedDestinationCoordinates.HasValue)
             {
-                _logger.LogInformation("Processing is locked by another method. Waiting...");
-                await Task.Delay(50, cancellationToken);
-                continue;
+                _logger.LogWarning("Coordinates are missing in Redis. Skipping CallBack execution.");
+                return; // Quitter si les coordonnées sont manquantes
             }
 
-            try
+            // Vérification du statut
+            if (consumeStatus == "Called")
             {
-                // Vérifier si Consume() a été appelé
-                var consumeStatus = await redisDb.StringGetAsync(statusKey);
-                if (consumeStatus != "Called")
-                {
-                    _logger.LogInformation("Consume() has not been called yet. Waiting...");
-                    await Task.Delay(50, cancellationToken);
-                    continue;
-                }
+                _logger.LogInformation("This service is the Leader. Executing CallBack logic...");
 
-                // Lire les coordonnées
-                var storedStartingCoordinates = await redisDb.StringGetAsync(startingKey);
-                var storedDestinationCoordinates = await redisDb.StringGetAsync(destinationKey);
-
-                if (!storedStartingCoordinates.HasValue || !storedDestinationCoordinates.HasValue)
-                {
-                    _logger.LogWarning("Coordinates are missing in Redis. Waiting...");
-                    await Task.Delay(1000, cancellationToken);
-                    continue;
-                }
-
-                _logger.LogInformation("Starting ProcessInLoop...");
-
-                // Exécuter les fonctions principales
+                // Lancer la comparaison des temps
                 var producer = await _compareTimes.BeginComparingBusAndCarTime(
                     storedStartingCoordinates.ToString(),
                     storedDestinationCoordinates.ToString()
                 );
 
+                // Tâches principales avec politiques de retry
                 _ = _infiniteRetryPolicy.ExecuteAsync(async () =>
                     await _compareTimes.PollTrackingUpdate(producer.Writer)
                 );
@@ -166,49 +193,18 @@ public class TripComparatorMqController : IConsumer<CoordinateMessage>
                 _ = _backOffRetryPolicy.ExecuteAsync(async () =>
                     await _compareTimes.WriteToStream(producer.Reader)
                 );
-
-                _logger.LogInformation("Processing completed successfully.");
-                break; // Sortir de la boucle après avoir terminé
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(ex, "Error occurred during ProcessInLoop. Retrying...");
-                
+                _logger.LogInformation("Not a Leader or status is not 'Called'. Skipping CallBack.");
             }
-
-            await Task.Delay(50, cancellationToken);
         }
-
-    }
-    private string RemoveWhiteSpaces(string s) => s.Replace(" ", "");
-
-    public async Task CallBack(CancellationToken cancellationToken)
-    {
-        
-
-        while (!cancellationToken.IsCancellationRequested)
+        catch (Exception ex)
         {
-            var isLeader = Environment.GetEnvironmentVariable("IS_LEADER_TC");
-            string statusKey = "TripComparator:ConsumeStatus";
-            var redisDb = RedisConnectionController.GetDatabase();
-            var consumeStatus = await redisDb.StringGetAsync(statusKey);
-
-            if (isLeader != "true")
-            {
-                _logger.LogInformation("Not a leader, skipping CallBack.");
-                return;
-            }
-
-            if (consumeStatus != "Called")
-            {
-                _logger.LogInformation("Consume() has not been called yet. Waiting...");
-                await Task.Delay(50, cancellationToken);
-                continue;
-            }
-
-            _logger.LogInformation("CallBack s'appelle avec succes");
+            _logger.LogError(ex, "An error occurred while executing CallBack logic.");
         }
 
-        await Task.Delay(50, cancellationToken);
+        _logger.LogInformation("CallBack monitoring stopped.");
     }
+
 }

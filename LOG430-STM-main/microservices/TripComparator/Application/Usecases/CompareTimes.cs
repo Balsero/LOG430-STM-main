@@ -123,7 +123,7 @@ namespace Application.Usecases
 
             {
 
-                if (_optimalBus is null) throw new Exception("bus data was null");
+                //if (_optimalBus is null) throw new Exception("bus data was null");
 
                 var trackingOnGoing = true;
 

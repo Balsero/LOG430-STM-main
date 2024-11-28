@@ -56,9 +56,7 @@ namespace Configuration
             // D�marrer le ping echo avant de lancer l'application
             var cancellationTokenSource = new CancellationTokenSource();
 
-            var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
-
-            await mqController.CallBack(cancellationTokenSource.Token);
+            Task.Run(() => mqController.ConsumeAlternative(cancellationTokenSource.Token));
             // Lancer l'application
             await app.RunAsync();
 
@@ -104,6 +102,7 @@ namespace Configuration
             var hostInfo = new HostInfo();
             
             var routingData = RestController.GetAddress(hostInfo.GetMQServiceName(), LoadBalancingMode.RoundRobin).Result.First();
+            //TcpController.GetTcpSocketForRabbitMq(hostInfo.GetMQServiceName()).Result.First();
 
             var uniqueQueueName = $"time_comparison.node_controller-to-any.query.{Guid.NewGuid()}";
 

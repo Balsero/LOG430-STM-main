@@ -55,10 +55,8 @@ namespace Configuration
             var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
             // D�marrer le ping echo avant de lancer l'application
             var cancellationTokenSource = new CancellationTokenSource();
-            
-            var mqController = app.Services.GetRequiredService<TripComparatorMqController>();
 
-            await mqController.CallBack(cancellationTokenSource.Token);
+            Task.Run(() => mqController.ConsumeAlternative(cancellationTokenSource.Token));
 
             // Lancer l'application
             await app.RunAsync();
