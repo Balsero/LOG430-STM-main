@@ -19,8 +19,40 @@ Membres de l'équipe:
 
 ## Introduction
 
->TODO: insérer votre introduction
+Dans le cadre de ce laboratoire, notre objectif est d'améliorer la résilience et la disponibilité de nos services face à des attaques intensifiées et variées. Pendant une période de 5 minutes, un outil similaire à Chaos Monkey simule des défaillances matérielles en détruisant des composants critiques à des fréquences élevées :
 
+- Les services sont attaqués à une fréquence de **6 fois par minute**.
+- Les volumes des composants de calcul (computational components) sont détruits à raison de **2 fois par minute**.
+- Les composants de type connecteur subissent également des destructions à une fréquence de **2 fois par minute**.
+
+En outre, les queues de messagerie utilisées pour la communication sont également ciblées, augmentant la complexité du maintien du service. Notre infrastructure doit donc être capable de se rétablir rapidement et de garantir la continuité du service de suivi des bus pour deux coordonnées spécifiques.
+
+## Critères de réussite
+
+Pour que notre expérience soit considérée comme un succès, nous devons répondre aux critères suivants :
+
+- **Actualisation continue** : Les informations de suivi doivent s’actualiser en continu sans interruption, en indiquant correctement les bus associés aux coordonnées fournies.
+- **Temps de réponse** : Le temps de réponse global (en millisecondes) doit rester inférieur à 250 ms, même lors des attaques.
+- **Stabilité** : Le système doit se rétablir dans un délai inférieur à 250 ms après une destruction.
+- **Précision des trajets** : Les informations sur la durée des trajets en voiture doivent rester correctes.
+- **Réduction des erreurs** : Les erreurs, telles que les messages retardés ou répétés, doivent être minimisées.
+
+## Plan du rapport
+
+Ce rapport détaillera les approches et solutions mises en place pour répondre aux nouvelles exigences, tout en explorant les alternatives envisagées. Les sections suivantes seront abordées :
+
+1. **Vues architecturales** pour décrire les stratégies de redondance et l’attribution des tâches entre les membres de l’équipe.
+2. **Diagrammes de séquence** avant et après la mise en œuvre des améliorations.
+3. **Réponses aux questions spécifiques** liées aux concepts utilisés dans le projet, telles que :
+   - La gestion des quorum queues et leur comportement face aux destructions.
+   - L’utilisation de **Test Doubles** dans le cadre des tests, et leur rôle dans notre projet.
+   - Les tactiques pour traiter les cas où les coordonnées fournies ne correspondent à aucun trajet d’autobus.
+   - Une stratégie pour contrer les attaques visant les bases de données et assurer une résilience accrue.
+   - Les modifications nécessaires pour implémenter une fonction d’annulation dans le système.
+
+Avec ces ajustements, nous visons à démontrer la robustesse de notre système face à des attaques encore plus agressives, tout en explorant et justifiant les choix effectués parmi plusieurs approches possibles.
+
+---
 ## Vues architecturales
 
 - Au travers des différentes vues architecturales, montrez comment la redondance est présente dans vos microservices après l'implémentation du laboratoire 2. La présence des vues primaires et des catalogues d'éléments est nécessaire. Assurez-vous de bien présenter la tactique de redondance dans vos vues. Corrigez les problèmes des vues précédentes et montrez les changements apportés au laboratoire 3 pour résister aux nouvelles attaques, si applicables.
