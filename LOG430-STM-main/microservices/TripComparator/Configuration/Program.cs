@@ -101,8 +101,10 @@ namespace Configuration
         {
             var hostInfo = new HostInfo();
             
-            var routingData = RestController.GetAddress(hostInfo.GetMQServiceName(), LoadBalancingMode.RoundRobin).Result.First();
-            //TcpController.GetTcpSocketForRabbitMq(hostInfo.GetMQServiceName()).Result.First();
+            var routingData = TcpController.GetTcpSocketForRabbitMq(hostInfo.GetMQServiceName()).Result.First();
+            
+            //RestController.GetAddress(hostInfo.GetMQServiceName(), LoadBalancingMode.RoundRobin).Result.First();
+            
 
             var uniqueQueueName = $"time_comparison.node_controller-to-any.query.{Guid.NewGuid()}";
 
