@@ -102,7 +102,8 @@ namespace Configuration
         {
             var hostInfo = new HostInfo();
 
-            var routingData = TcpController.GetTcpSocketForRabbitMq(hostInfo.GetMQServiceName()).Result.First();
+
+            var routingData = TcpController.GetTcpSocketForRabbitMq(hostInfo.GetMQServiceName()).Result;
 
             Console.WriteLine($"Routing data: {routingData}");
 
@@ -116,7 +117,7 @@ namespace Configuration
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host($"rabbitmq://{ routingData }:{routingData}", c =>
+                    cfg.Host(routingData, c =>
                     {
                         c.RequestedConnectionTimeout(100);
                         c.Heartbeat(TimeSpan.FromMilliseconds(50));
