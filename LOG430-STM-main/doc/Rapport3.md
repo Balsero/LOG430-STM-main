@@ -1,21 +1,23 @@
 # Laboratoire #3
 
-Groupe: 0x  
-Equipe: 0x
+Groupe: 2 
+Equipe: 04
 
 Membres de l'équipe:
+Jonathan Rodriguez Tames 
+Ali Dickens Augustin
+Jean-Philippe Lalonde
+
 
 ## Évaluation de la participation
 
 >L'évaluation suivante est faite afin d'encourager des discussions au sein de l'équipe. Une discussion saine du travail de chacun est utile afin d'améliorer le climat de travail. Les membres de l'équipe ont le droit de retirer le nom d'un ou une collègue du rapport.
 
-| nom de l'étudiant    | Facteur multiplicatif |
-|:--------------------:|:--------------------:|
-| Jean Travaillant      |          1           |
-| Joe Paresseux         |        0.75          |
-| Jules Procrastinateu  |        0.5           |
-| Jeanne Parasite       |        0.25          |
-| Jay Oublié            |          0           |
+| nom de l'étudiant        | Facteur multiplicatif|
+|:--------------------:    |:--------------------:|
+| Jonathan Rodriguez Tames    |           1          |
+| Ali Dickens Augustin        |			  1          |
+| Jean-Philippe Lalonde		  |			  1          |
 
 ## Introduction
 
@@ -59,15 +61,64 @@ Avec ces ajustements, nous visons à démontrer la robustesse de notre système 
 
 ### Vues architecturales de type module - redondance
 
+![Diagramme de module](ClasseDiagramme430.drawio.svg)
+
+## Catalogue d'Élément - Vue Module
+
+| **Nom de l'Élément**      | **Responsabilité**                                                   | **Commentaires/Lien avec autres services**                                                             |
+|---------------------------|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| **NodeController**        | Interface pour les interactions du nœud.                          | Dépend des services distants pour la communication.                                                  |
+| **TripComparatorMqController** | Gère la comparaison des trajets et les messages RabbitMQ pour TripComparator. | Interagit avec RabbitMQ pour échanger des messages.                                                  |
+| **TripComparator**        | Service principal pour comparer les trajets et optimiser les règles. | Relié à TripComparatorMqController pour la gestion des messages.                                     |
+| **RedisServiceController**| Responsable de l'accès à Redis pour le stockage temporaire.        | Fournit les données pour ManagerTC, ManagerSTM et d'autres services.                                 |
+| **ManagerTC**             | Responsable de la gestion des Leaders et des promotions pour les services. | Coordonne avec Sidecar et RedisServiceController pour l'état des Leaders avec le service TripComparator. |
+| **ManagerSTM**            | Gestionnaire spécialisé pour le système STM, détermine les Leaders et supervise leur état. | Coordonne avec Sidecar et RedisServiceController pour l'état des Leaders avec le service STM.         |
+| **ManagerStmController**  | Contrôleur API pour gérer les Leaders STM, expose les vérifications d'état et les promotions. | Dépend de ManagerSTM pour la logique métier.                                                         |
+| **LeaderController**      | Fournit des routes pour la vérification et la promotion des Leaders. | API principale pour vérifier et promouvoir des Leaders.                                              |
+| **Sidecar**               | Proxy local qui gère les communications et les vérifications liées au Leader. | Travaille avec ManagerTC et RedisServiceController.                                                  |
+| **SidecarController**     | Contrôleur API exposant des fonctionnalités pour vérifier si le Leader est actif et synchronisé. | Appelé par Sidecar et potentiellement d’autres services pour des vérifications.                      |
+| **STM**                   | Référence au Système de Transport de Montréal pour coordonner les opérations critiques. | Centralise les opérations liées aux trajets et aux priorités.                                        |
+| **Redis**                 | Stockage temporaire des états et données partagées entre services. | Crucial pour la synchronisation entre ManagerTC, Sidecar, etc.                                       |
+| **Postgres**              | Base de données relationnelle pour le stockage persistant des données. | Utilisée pour les données de longue durée.                                                           |
+| **RabbitMQ**              | Gestionnaire des échanges de messages entre services.              | Connecte les services via le protocole AMQP.                                                         |
+| **CompareTripController** | Contrôleur chargé de comparer des trajets entre deux coordonnées spécifiques. | Interagit avec TripComparator pour effectuer les comparaisons. Utilise les stratégies de retry.       |
 ### Vues architecturales de type composant et connecteur - redondance
 
+![Diagramme CC](C&CArchitecte.drawio.svg)
+
+Note : Le catalogue d'éléments pour les vues allocation et composant et connecteur sont identiques et afficher suite à la vue allocation 
 ### Vues architecturales de type allocation - redondance
 
->Note : Une légende est nécessaire dans les vues primaires pour assurer une compréhension claire des éléments représentés.
+![Diagramme Sequence](Allocation.drawio.svg)
+
+# Catalogue d'Éléments - Vue d'Allocation et C&C
+
+| **Nom de l'Élément**      | **Responsabilité**                                                     | **Commentaires/Lien avec autres services**                                                             |
+|---------------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| **ManagerSTM**            | Gérer la décision "Leader" pour les services de la STM              | Se coordonne avec LeaderController pour la promotion et l'état du Leader.                            |
+| **ManagerTC**             | Gérer la décision "Leader" pour les services de TripComparator       | Se coordonne avec LeaderController pour la promotion et l'état du Leader.                            |
+| **LeaderController**      | Contient les routes nécessaires pour la vérification de l'état Leader et la promotion | Utilisé pour l'exposition d'API permettant les actions sur le Leader.                                |
+| **NodeController**        | Assure la communication entre les services à travers des messages RabbitMQ | Représente un contrôleur distant utilisé par divers services.                                        |
+| **TripComparator**        | Compare les trajets pour la gestion des règles et des priorités      | Consomme des messages RabbitMQ pour exécuter ses actions et construit le message de tracking complet pour le renvoyer à RabbitMQ. |
+| **Redis**                 | Stocke les données temporaires pour coordonner les états des services | Base de données clé/valeur pour partager des informations.                                           |
+| **Postgres**              | Stockage principal des données persistantes                         | Utilisé pour la persistance à long terme.                                                            |
+| **RabbitMQ**              | Gère les échanges de messages entre services                        | Protocole AMQP utilisé par les services pour la communication.                                       |
+| **RouteTimeProvider**     | Fournit des informations sur les temps de trajet pour optimiser les services STM | Support pour les comparaisons et planifications effectuées par TripComparator.                      |
+| **STM**                   | Supervise les transports et assure la gestion des trajets, positions, et synchronisations | Connecté à divers services pour assurer la fluidité des opérations de transport.                     |
+| **Sidecar**               | Proxy local permettant de vérifier l’état du Leader et de promouvoir les Leaders | Fonctionne en lien avec ManagerTC/ManagerSTM et Redis pour synchroniser l'état des leaders.          |
+
+
 
 ## Attribution des tâches
 
-- Produisez une vue d'allocation de type attribution des tâches pour indiquer qui a travaillé sur quoi lors du laboratoire 3.
+
+| **Tâches**                | **Responsables**                     | **Description / Commentaires**                                      |
+|---------------------------|---------------------------------------|----------------------------------------------------------------------|
+| **Implementation/Code**   | Ali, Jonathan, Jean-Philippe         | Mettre en place l’environnement et implémenter la redondance passive. |
+| **Diagrammes**             | Ali, Jonathan, Jean-Philippe         | Diagramme de séquence et les vues modules, composants et allocation.  |
+| **Questions**             | Ali, Jonathan, Jean-Philippe         | Répondre aux questions des rapports.                                 |
+| **Rédaction du rapport**  | Ali, Jonathan, Jean-Philippe         | Rédaction du rapport du laboratoire.                                 |
+
 
 ## Questions
 
