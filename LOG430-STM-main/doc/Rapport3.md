@@ -442,9 +442,18 @@ La mise en place d’une **redondance passive avec synchronisation** assure que 
 ## **Question 5** : 
 Imaginez qu'on vous demande également d'implémenter la tactique d'utilisabilité « Annuler » (Cancel). Nous désirons permettre d'envoyer une requête HTTP « Annuler » au TripComparator pour annuler la comparaison du temps de trajet entre deux coordonnées. Expliquer les changements devant être apportés au projet pour pouvoir annuler la comparaison du temps de trajet. Créez un diagramme de séquence pour présenter visuellement les changements suggérés.
 
+Pour procéder a ce changement, il nous faut modifier le comportement de notre TripComparator afin qu'il réagisse au message d'annulation qui sera dans la queue du RabbitMQ. Lors de notre boucle de mise a jour, il faudra ajouter une vérification des messages pour être sur qu'un message d'annulation n'a pas été recu.
+Une fois que le message sera consommé, il faudra alors modifier une variable locale qui aura comme information si îl y a une annulation ou pas. Une fois cette variable modifié, la boucle sera arrêter et une confirmation d'annulation sera envoyé par la Queue de réponse pour aviser le Dashboard de l'information.
+Par la suite on va remettre la valeur de la variable a False en prévision d'une nouvelle requête.
+
+![Diagramme de Sequence](Question5.svg)
+
+
 ## Conclusion
 
->TODO: insérer votre conclusion
+>En conclusion, ce laboratoire visait à améliorer la disponibilité de nos services en mettant en place une infrastructure résiliente supplémentaire au dernier Lab.
+
+
 
 - N'oubliez pas d'effacer les TODO.
 - Générer une version PDF de ce document pour votre remise finale.
