@@ -44,8 +44,7 @@ Pour que notre expérience soit considérée comme un succès, nous devons répo
 Ce rapport détaillera les approches et solutions mises en place pour répondre aux nouvelles exigences, tout en explorant les alternatives envisagées. Les sections suivantes seront abordées :
 
 1. **Vues architecturales** pour décrire les stratégies de redondance et l’attribution des tâches entre les membres de l’équipe.
-2. **Diagrammes de séquence** avant et après la mise en œuvre des améliorations.
-3. **Réponses aux questions spécifiques** liées aux concepts utilisés dans le projet, telles que :
+2. **Réponses aux questions spécifiques** liées aux concepts utilisés dans le projet, telles que :
    - La gestion des quorum queues et leur comportement face aux destructions.
    - L’utilisation de **Test Doubles** dans le cadre des tests, et leur rôle dans notre projet.
    - Les tactiques pour traiter les cas où les coordonnées fournies ne correspondent à aucun trajet d’autobus.
@@ -56,14 +55,12 @@ Avec ces ajustements, nous visons à démontrer la robustesse de notre système 
 
 ---
 ## Vues architecturales
-
 - Au travers des différentes vues architecturales, montrez comment la redondance est présente dans vos microservices après l'implémentation du laboratoire 2. La présence des vues primaires et des catalogues d'éléments est nécessaire. Assurez-vous de bien présenter la tactique de redondance dans vos vues. Corrigez les problèmes des vues précédentes et montrez les changements apportés au laboratoire 3 pour résister aux nouvelles attaques, si applicables.
 
 ### Vues architecturales de type module - redondance
-
 ![Diagramme de module](ClasseDiagramme430.drawio.svg)
 
-## Catalogue d'Élément - Vue Module
+### Catalogue d'Élément - Vue Module
 
 | **Nom de l'Élément**      | **Responsabilité**                                                   | **Commentaires/Lien avec autres services**                                                             |
 |---------------------------|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
@@ -83,7 +80,6 @@ Avec ces ajustements, nous visons à démontrer la robustesse de notre système 
 | **RabbitMQ**              | Gestionnaire des échanges de messages entre services.              | Connecte les services via le protocole AMQP.                                                         |
 | **CompareTripController** | Contrôleur chargé de comparer des trajets entre deux coordonnées spécifiques. | Interagit avec TripComparator pour effectuer les comparaisons. Utilise les stratégies de retry.       |
 ### Vues architecturales de type composant et connecteur - redondance
-
 ![Diagramme CC](C&CArchitecte.drawio.svg)
 
 Note : Le catalogue d'éléments pour les vues allocation et composant et connecteur sont identiques et afficher suite à la vue allocation 
@@ -91,7 +87,7 @@ Note : Le catalogue d'éléments pour les vues allocation et composant et connec
 
 ![Diagramme Sequence](Allocation.drawio.svg)
 
-# Catalogue d'Éléments - Vue d'Allocation et C&C
+### Catalogue d'Éléments - Vue d'Allocation et C&C
 
 | **Nom de l'Élément**      | **Responsabilité**                                                     | **Commentaires/Lien avec autres services**                                                             |
 |---------------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
@@ -109,7 +105,7 @@ Note : Le catalogue d'éléments pour les vues allocation et composant et connec
 
 
 
-## Attribution des tâches
+### Attribution des tâches
 
 
 | **Tâches**                | **Responsables**                     | **Description / Commentaires**                                      |
@@ -122,11 +118,12 @@ Note : Le catalogue d'éléments pour les vues allocation et composant et connec
 
 ## Questions
 
-## **Question 1** : Lors de ce laboratoire, les queues de messagerie sont attaquées. Afin de ne pas perdre de messages, nous utilisons les quorum queues de RabbitMQ. Expliquez en détail comment fonctionnent ces quorum queues. Qu'arrive-t-il lorsqu'une quorum queue est détruite ? Qu'arrive-t-il lorsqu'elles sont toutes détruites?
+## **Question 1** : 
+Lors de ce laboratoire, les queues de messagerie sont attaquées. Afin de ne pas perdre de messages, nous utilisons les quorum queues de RabbitMQ. Expliquez en détail comment fonctionnent ces quorum queues. Qu'arrive-t-il lorsqu'une quorum queue est détruite ? Qu'arrive-t-il lorsqu'elles sont toutes détruites?
 
 Les **quorum queues** de RabbitMQ utilisent l'algorithme de consensus **Raft** pour garantir la cohérence des messages entre les répliques et assurer leur durabilité dans un cluster distribué.
 
-## Rappel : Algorithme Raft
+#### Rappel : Algorithme Raft
 Raft est conçu pour :
 1. **Cohérence forte** : Toutes les répliques partagent le même état une fois les décisions prises.
 2. **Disponibilité** : Le système reste opérationnel tant qu'une majorité (quorum) de répliques est disponible.
@@ -134,71 +131,71 @@ Raft est conçu pour :
 
 ---
 
-## Étapes principales du fonctionnement des Quorum Queues avec Raft
+#### Étapes principales du fonctionnement des Quorum Queues avec Raft
 
-### 1. Élection du leader
+##### 1. Élection du leader
 - Une réplique est élue leader via un processus d'élection.
 - Le leader coordonne toutes les opérations sur la queue, notamment la réception et la réplication des messages.
 
-### 2. Écriture de messages
+##### 2. Écriture de messages
 - Les producteurs envoient les messages au leader.
 - Le leader inscrit chaque message dans un journal local (*log*).
 - Ensuite, il propage les messages à toutes les répliques (followers).
 
-### 3. Validation par le quorum
+##### 3. Validation par le quorum
 - Pour garantir la durabilité, le message doit être écrit dans le journal de la majorité (*quorum*) des répliques.
 - Une fois qu'un quorum confirme la réception, le leader retourne un accusé de réception au producteur.
 
-### 4. Réponse aux consommateurs
+##### 4. Réponse aux consommateurs
 - Les consommateurs demandent les messages au leader.
 - Le leader fournit les messages dans l’ordre confirmé par le quorum.
 
-### 5. Changement de leader
+##### 5. Changement de leader
 - Si le leader tombe en panne, un nouveau leader est élu parmi les followers.
 - Le nouveau leader est choisi parmi ceux possédant le journal le plus à jour.
 
 ---
 
-## Comportement en cas de panne ou défaillance
+#### Comportement en cas de panne ou défaillance
 
-### 1. Panne d’un follower
+##### 1. Panne d’un follower
 - Si un follower devient indisponible, le quorum est maintenu tant que la majorité des répliques reste active.
 - Le follower sera mis à jour par le leader lorsqu’il reviendra en ligne.
 
-### 2. Panne du leader
+##### 2. Panne du leader
 - Si le leader tombe, un nouveau leader est élu parmi les répliques les plus à jour.
 - Les messages confirmés ne sont pas perdus.
 
-### 3. Perte de quorum
+##### 3. Perte de quorum
 - Si moins de la moitié des répliques restent opérationnelles, la quorum queue devient indisponible.
 - Aucune opération d’écriture ou de lecture ne peut être effectuée tant qu’un quorum n’est pas rétabli.
 
 ---
 
-## Avantages des Quorum Queues avec Raft
+#### Avantages des Quorum Queues avec Raft
 1. **Cohérence forte** : Les messages confirmés sont toujours disponibles.
 2. **Durabilité** : Aucune perte de message confirmé grâce à la réplication.
 3. **Tolérance aux pannes** : Le système reste fonctionnel malgré la perte de nœuds, tant que le quorum est maintenu.
 
 ---
 
-## Scénarios de défaillance
+#### Scénarios de défaillance
 
-### 1. Perte du leader
+#### 1. Perte du leader
 - Un nouveau leader est élu parmi les répliques les plus à jour.
 - La file d’attente reste disponible tant qu’un quorum est maintenu.
 
-### 2. Destruction complète d’une quorum queue
+#### 2. Destruction complète d’une quorum queue
 - Si toutes les répliques d'une queue sont détruites, les messages non livrés sont perdus.
 - Aucun nouveau message ne peut être envoyé ou consommé.
 
-### 3. Destruction de toutes les quorum queues
+#### 3. Destruction de toutes les quorum queues
 - La destruction de toutes les quorum queues entraîne une perte totale des messages.
 - Une récupération est possible uniquement via des sauvegardes externes (si configurées).
 
 ---
 
-## Synthèse
+#### Synthèse
 Les **quorum queues**, grâce à Raft, offrent une solution robuste pour garantir la durabilité des messages et la tolérance aux pannes. Cependant, pour éviter des pertes catastrophiques, il est essentiel de :
 - Effectuer des sauvegardes régulières.
 - Surveiller l'intégrité des nœuds du cluster.
@@ -206,7 +203,8 @@ Les **quorum queues**, grâce à Raft, offrent une solution robuste pour garanti
 
 ---
 
-## **Question 2** : Quel type de « Test Double », tel qu'identifié par Martin Fowler, est utilisé dans les différents tests du projet? Identifiez un type de «Test Double» présent et présentez comment ce « Test Double » est utilisé dans le code. Montrez les extraits de code pertinents.
+### **Question 2** : 
+Quel type de « Test Double », tel qu'identifié par Martin Fowler, est utilisé dans les différents tests du projet? Identifiez un type de «Test Double» présent et présentez comment ce « Test Double » est utilisé dans le code. Montrez les extraits de code pertinents.
 
 Le code suivant représente un **test double**, plus précisément un **stub** :
 
@@ -244,37 +242,37 @@ Un **stub** est un type de **test double** qui remplace une dépendance réelle 
 
 ---
 
-## Caractéristiques des stubs dans ce code
+#### Caractéristiques des stubs dans ce code
 
-### 1. **Renvois prédéfinis**
+#### 1. **Renvois prédéfinis**
 - La méthode `GetBestBus` retourne toujours un objet `RideDto` avec des valeurs fixes : `"0000"`, `"0001"`, `"0002"`.
 - Cela permet de tester le reste du système sans dépendre d'une implémentation réelle ou de données externes.
 
-### 2. **Absence de logique complexe**
+#### 2. **Absence de logique complexe**
 - Les méthodes, comme `BeginTracking`, ne font rien d'autre que retourner une tâche terminée (`Task.CompletedTask`).
 - La méthode `GetTrackingUpdate` fournit des valeurs fixes pour tester des scénarios spécifiques, comme :
   - Une durée fixe (`Duration = 1`).
   - Un message défini : `"I'm a tripcomparator stm client stub"`.
   - Un état : `TrackingCompleted = false`.
 
-### 3. **Isolation des tests**
+#### 3. **Isolation des tests**
 - En remplaçant une dépendance réelle (potentiellement lente ou non disponible) par ce stub, le système peut être testé de manière isolée.
 
 ---
 
-## Différences entre ce stub et les comportements réels
+#### Différences entre ce stub et les comportements réels
 
-### 1. **Absence de logique réelle**
+#### 1. **Absence de logique réelle**
 - Le stub ne calcule pas réellement le meilleur bus.
 - Il ne contacte aucun service externe ou API.
 - Les valeurs sont fixes et servent uniquement à tester les interactions ou les comportements du système testé.
 
-### 2. **Pas de dépendance externe**
+#### 2. **Pas de dépendance externe**
 - Contrairement au composant réel, le stub n'a besoin ni de réseau, ni d'accès à des données en temps réel.
 
 ---
 
-## Utilité du `StmClientStub`
+#### Utilité du `StmClientStub`
 
 Le `StmClientStub` est un exemple classique de **stub**, utilisé pour :
 - Simplifier les tests.
@@ -286,7 +284,7 @@ Il est particulièrement utile pour tester les interactions et les cas spécifiq
 ---
 
 
-## Synthèse
+#### Synthèse
 
 Le `StmClientStub` est un exemple classique de **stub**, utilisé pour simplifier et isoler les tests. 
 
@@ -299,21 +297,22 @@ En isolant les tests des dépendances externes, le `StmClientStub` améliore la 
 
 ---
 
-### **Question 3** : Lorsqu’un utilisateur entre les coordonnées de deux points à Montréal entre lesquels ne circule pas un autobus, que se passe-t-il? Donnez un attribut de qualité concerné par cette situation. Identifiez une ou plusieurs tactiques pouvant être utiles dans cette situation et justifiez pourquoi.
+## **Question 3** : 
+Lorsqu’un utilisateur entre les coordonnées de deux points à Montréal entre lesquels ne circule pas un autobus, que se passe-t-il? Donnez un attribut de qualité concerné par cette situation. Identifiez une ou plusieurs tactiques pouvant être utiles dans cette situation et justifiez pourquoi.
 
-## Situation
+### Situation
 Lorsqu’un utilisateur entre les coordonnées de deux points à Montréal entre lesquels **aucun autobus ne circule**, le système doit gérer cette situation de manière appropriée pour éviter une mauvaise expérience utilisateur.
 
 ---
 
-## Attribut de qualité concerné
+### Attribut de qualité concerné
 L'attribut de qualité concerné ici est **l’utilisabilité**. Cela inclut :
 - **Efficacité** : La capacité du système à fournir une réponse rapide et pertinente.
 - **Satisfaction** : L'expérience utilisateur lorsqu'aucun trajet n’est disponible.
 
 ---
 
-## Comportement attendu
+### Comportement attendu
 Lorsque le système détecte qu’aucun autobus ne circule entre les deux points fournis :
 1. **Informer l’utilisateur** :
    - Afficher un message clair indiquant qu’il n’y a pas de liaison directe.
@@ -325,9 +324,9 @@ Lorsque le système détecte qu’aucun autobus ne circule entre les deux points
 
 ---
 
-## Tactiques pouvant être utilisées
+### Tactiques pouvant être utilisées
 
-### 1. **Cancel : Annuler la requête de recherche**
+#### 1. **Cancel : Annuler la requête de recherche**
 - **Tactique** : Permettre à l'utilisateur de stopper une recherche en cours.
 - **Exemple** :
   - Ajouter un bouton **"Annuler"** pour interrompre une recherche de trajet longue ou non pertinente.
@@ -336,7 +335,7 @@ Lorsque le système détecte qu’aucun autobus ne circule entre les deux points
   - Renforce l'**efficacité** et le **contrôle utilisateur**.
   - Réduit la frustration en cas d'attente inutile.
   
-### 2. **Undo : Revenir à un état précédent**
+#### 2. **Undo : Revenir à un état précédent**
 - **Tactique** : Fournir la possibilité de revenir à une action précédente.
 - **Exemple** :
   - Ajouter un bouton **"Annuler l'entrée précédente"** pour modifier les coordonnées ou réinitialiser les données saisies.
@@ -345,14 +344,14 @@ Lorsque le système détecte qu’aucun autobus ne circule entre les deux points
   - Améliore la **tolérance aux erreurs** et la **satisfaction utilisateur**.
   - Offre une interaction fluide en permettant des corrections rapides.
 
-### 3. **Assistance contextuelle**
+#### 3. **Assistance contextuelle**
 - **Tactique** : Fournir des indications supplémentaires pour aider l'utilisateur.
 - **Exemple** : 
   - Une section d’aide expliquant comment utiliser le système.
   - Un lien vers une carte interactive ou un service d’assistance.
 - **Justification** : Offrir un support pour guider l'utilisateur, améliorant ainsi son expérience globale.
 
-### 4. **Gestion des erreurs**
+#### 4. **Gestion des erreurs**
 - **Tactique** : Identifier les cas où aucun trajet direct n'est disponible et informer l’utilisateur avec un message explicite.
 - **Exemple** : 
   > "Aucun service d'autobus ne relie les emplacements sélectionnés."
@@ -360,7 +359,7 @@ Lorsque le système détecte qu’aucun autobus ne circule entre les deux points
 
 ---
 
-## Synthèse
+### Synthèse
 
 Lorsqu’un utilisateur entre des coordonnées entre lesquelles aucun autobus ne circule, il est essentiel que le système gère cette situation de manière à maintenir une expérience utilisateur positive. 
 
@@ -375,17 +374,16 @@ En combinant ces approches, le système devient plus utilisable, satisfaisant et
 
 ---
 
+## **Question 4** : 
+Imaginez qu'on vous demande de réaliser un 4e laboratoire lors duquel votre système devra résister à des attaques visant les bases de données. Ces attaques comprennent des « Hardware Failures », donc le contenu des bases de données sera perdu à la suite des attaques. Décrivez-nous la stratégie que vous allez employer pour résister à ces attaques. Comment est-ce que les résultats obtenus lors de la démonstration 4 seront impactés?
 
 
-- **Question 4** : Imaginez qu'on vous demande de réaliser un 4e laboratoire lors duquel votre système devra résister à des attaques visant les bases de données. Ces attaques comprennent des « Hardware Failures », donc le contenu des bases de données sera perdu à la suite des attaques. Décrivez-nous la stratégie que vous allez employer pour résister à ces attaques. Comment est-ce que les résultats obtenus lors de la démonstration 4 seront impactés?
+### Stratégie Employée
 
-
-## Stratégie Employée
-
-### **1. Redondance Passive avec Synchronisation**
+#### **1. Redondance Passive avec Synchronisation**
 La stratégie repose sur la mise en place d’un système de **redondance passive** où une base de données principale est activement utilisée, tandis qu’une base de données secondaire (ou réplica) reste en attente. La synchronisation entre les deux bases garantit que les données sont toujours cohérentes.
 
-#### **Composants de la stratégie** :
+##### **Composants de la stratégie** :
 1. **Base Principale (Primary Database)** :
    - Traite les requêtes en lecture et en écriture.
    - Propage les mises à jour à la base secondaire.
@@ -409,7 +407,7 @@ La stratégie repose sur la mise en place d’un système de **redondance passiv
 
 ---
 
-### **2. Résilience Supplémentaire**
+#### **2. Résilience Supplémentaire**
 - **Sauvegardes Automatisées** :
   - Effectuer des sauvegardes complètes à intervalles réguliers (par exemple, toutes les 24 heures).
   - Stocker les sauvegardes dans des environnements isolés (cloud ou disques externes).
@@ -419,33 +417,32 @@ La stratégie repose sur la mise en place d’un système de **redondance passiv
 
 ---
 
-## Impact sur les Résultats de la Démonstration 4
+### Impact sur les Résultats de la Démonstration 4
 
-### **1. Disponibilité Continue**
+#### **1. Disponibilité Continue**
 - En cas de panne matérielle de la base principale, la base secondaire prend le relais automatiquement.
 - Les interruptions de service seront minimisées, voire inexistantes, car la redondance garantit la continuité des opérations.
 
-### **2. Intégrité des Données**
+#### **2. Intégrité des Données**
 - La réplication synchrone assure que les données entre la base principale et la base secondaire sont parfaitement alignées. Les résultats obtenus resteront cohérents et fiables.
 
-### **3. Dégradation Potentielle des Performances**
+#### **3. Dégradation Potentielle des Performances**
 - La synchronisation synchrone pourrait introduire une légère latence dans les opérations d’écriture, particulièrement si les bases sont géographiquement distantes.
 - Ce compromis est acceptable pour garantir la durabilité et la cohérence des données.
 
 ---
 
-## Synthèse
+### Synthèse
 
 La mise en place d’une **redondance passive avec synchronisation** assure que le système peut résister à des attaques ou pannes matérielles sans perte de données. Grâce à cette approche :
 1. Le système maintient une **disponibilité élevée**.
 2. Les résultats de la démonstration 4 resteront intacts, reflétant des données cohérentes malgré une panne.
 3. Une surveillance et une sauvegarde régulières complètent cette stratégie pour renforcer la résilience globale du système.
 
+## **Question 5** : 
+Imaginez qu'on vous demande également d'implémenter la tactique d'utilisabilité « Annuler » (Cancel). Nous désirons permettre d'envoyer une requête HTTP « Annuler » au TripComparator pour annuler la comparaison du temps de trajet entre deux coordonnées. Expliquer les changements devant être apportés au projet pour pouvoir annuler la comparaison du temps de trajet. Créez un diagramme de séquence pour présenter visuellement les changements suggérés.
 
-
-- **Question 5** : Imaginez qu'on vous demande également d'implémenter la tactique d'utilisabilité « Annuler » (Cancel). Nous désirons permettre d'envoyer une requête HTTP « Annuler » au TripComparator pour annuler la comparaison du temps de trajet entre deux coordonnées. Expliquer les changements devant être apportés au projet pour pouvoir annuler la comparaison du temps de trajet. Créez un diagramme de séquence pour présenter visuellement les changements suggérés.
-
-# Conclusion
+## Conclusion
 
 >TODO: insérer votre conclusion
 
@@ -456,4 +453,4 @@ La mise en place d’une **redondance passive avec synchronisation** assure que 
 
 \newpage
 
-# Annexes
+## Annexes
