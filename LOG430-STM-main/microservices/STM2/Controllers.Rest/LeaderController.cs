@@ -32,8 +32,10 @@ public class LeaderController : ControllerBase
         {
             return Ok("isLeader");
         }
-
-        return Problem("NotLeader");
+        else
+        {
+            return Ok("NotLeader");
+        }
     }
 
     [HttpGet]
@@ -42,6 +44,28 @@ public class LeaderController : ControllerBase
     public async Task<ActionResult<string>> LeaderPromotion()
     {
         Environment.SetEnvironmentVariable("IS_LEADER_2", "true");
+
+        _logger.LogInformation(Environment.GetEnvironmentVariable("IS_LEADER_2"));
+
         return Ok("Promotion to Leader success");
+    }
+
+    [HttpGet]
+    [ActionName(nameof(Demote))]
+    [EnableRateLimiting("fixed")]
+    public async Task<ActionResult<string>> Demote()
+    {
+        Environment.SetEnvironmentVariable("IS_LEADER_2", "false");
+        _logger.LogInformation(Environment.GetEnvironmentVariable("IS_LEADER_2"));
+        return Ok("Demotion success");
+    }
+
+    [HttpGet]
+    [ActionName(nameof(isAlive))]
+    [EnableRateLimiting("fixed")]
+    public async Task<ActionResult<string>> isAlive()
+    {
+
+        return Ok("isAlive");
     }
 }

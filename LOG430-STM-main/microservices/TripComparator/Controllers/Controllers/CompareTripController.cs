@@ -27,7 +27,7 @@ namespace Controllers.Controllers
             _backOffRetryPolicy = backOffRetryPolicy;
         }
 
-        [HttpPost]
+        [HttpPost] // Recoit la demande initiale avec les coordonées
         [SwaggerOperation("This endpoint is for you to manually test your system (without UI)")]
         public async Task<IActionResult> Post(string startingCoordinates, string destinationCoordinates)
         {

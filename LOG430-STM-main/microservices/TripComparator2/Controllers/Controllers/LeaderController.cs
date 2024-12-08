@@ -29,7 +29,7 @@ public class LeaderController : ControllerBase
         }
         else
         {
-            return Problem("NotLeader");
+            return Ok("NotLeader");
         }
     }
     [HttpGet]
@@ -52,5 +52,14 @@ public class LeaderController : ControllerBase
         Environment.SetEnvironmentVariable("IS_LEADER_TC", "false");
         _logger.LogInformation(Environment.GetEnvironmentVariable("IS_LEADER_TC"));
         return Ok("Demotion success");
+    }
+
+    [HttpGet]
+    [ActionName(nameof(isAlive))]
+    [EnableRateLimiting("fixed")]
+    public async Task<ActionResult<string>> isAlive()
+    {
+
+        return Ok("isAlive");
     }
 }

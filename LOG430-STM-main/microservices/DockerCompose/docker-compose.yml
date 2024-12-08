@@ -16,7 +16,7 @@ services:
       SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
       NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
       MQ_SERVICE_NAME: EventStream
-      CUSTOM_CONTAINER_PORTS_DISCOVERY: 5672,5432,80,6379
+      CUSTOM_CONTAINER_PORTS_DISCOVERY: 5672,5432,8080,6379
       BRIDGE_PORT: 32674
       # Trace > Information > Error
       Logging__LogLevel__Default: Information
@@ -41,7 +41,7 @@ services:
       RABBITMQ_ERLANG_COOKIE_FILE: /var/lib/rabbitmq/.erlang.cookie
     labels:
       Artifact_Category: Connector
-      Replicas: EventStream
+      Replicas: EventStream,EventStream2,EventStream3
 
   routetimeprovider:
     container_name: RouteTimeProvider
@@ -60,41 +60,6 @@ services:
     labels:
       ARTIFACT_CATEGORY: Computation
       Replicas: RouteTimeProvider,RouteTimeProvider2
-
-  sideCard:
-    container_name: SideCard
-    image: sidecard
-    restart: always
-    build:
-      context: ../SideCard
-      dockerfile: /RouteTimeProvider/Dockerfile
-    environment:
-      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
-      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
-      ID: SideCard
-      API_KEY: '${TOMTOM}'
-    ports:
-      - '32776:8080'
-    labels:
-      ARTIFACT_CATEGORY: Computation
-
-  sideCard2:
-    container_name: SideCard2
-    image: sidecard2
-    restart: always
-    build:
-      context: ../SideCard2
-      dockerfile: /RouteTimeProvider/Dockerfile
-    environment:
-      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
-      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
-      ID: SideCard2
-      API_KEY: '${TOMTOM}'
-    ports:
-      - '32780:8080'
-    labels:
-      ARTIFACT_CATEGORY: Computation
-
 
   tripcomparator:
     container_name: TripComparator
@@ -116,7 +81,6 @@ services:
     labels:
       ARTIFACT_CATEGORY: Computation
       REPLICAS : TripComparator
-      Pod_Links : SideCard
   
   tripcomparator2:
     container_name: TripComparator2
@@ -138,9 +102,6 @@ services:
     labels:
       ARTIFACT_CATEGORY: Computation
       REPLICAS : TripComparator2
-      Pod_Links : SideCard2
-
-  
 
   stm:
     container_name: STM
@@ -167,9 +128,32 @@ services:
     labels:
       Replicas : STM
       ARTIFACT_CATEGORY: Computation
-      Pod_Links : SideCard
-      DNS : Public
-      SHARE_VOLUMES: true
+
+  stm2:
+    container_name: STM2
+    image: stm2
+    restart: always
+    build:
+      context: ../STM2
+      dockerfile: /Configuration/Dockerfile
+    environment:
+      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
+      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
+      ID: STM2
+      API_KEY: '${STM}'
+      # HIGH (3gb) > MEDIUM (1.5gb) > LOW (300mb)
+      MEMORY_CONSUMPTION: LOW
+      POSTGRES_SERVER_ADRESSE_2: ${POSTGRES_SERVER_ADRESSE}
+      POSTGRES_USER_2: ${POSTGRES_USER}
+      POSTGRES_PASSWORD_2: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_2: ${POSTGRES_DB}
+      DB_PORT_2: ${DB_PORT}
+      IS_LEADER_2: "false"
+    ports:
+      - '32790:8080'
+    labels:
+      Replicas : STM2
+      ARTIFACT_CATEGORY: Computation
   
   managerSTM:
     container_name: ManagerSTM
@@ -210,34 +194,6 @@ services:
     labels:
       ARTIFACT_CATEGORY: Computation
       REPLICAS: ManagerTC,ManagerTC2
-
-  stm2:
-    container_name: STM2
-    image: stm2
-    restart: always
-    build:
-      context: ../STM2
-      dockerfile: /Configuration/Dockerfile
-    environment:
-      SERVICES_ADDRESS: '${SERVICES_ADDRESS}'
-      NODE_CONTROLLER_PORT: '${NODE_CONTROLLER_PORT}'
-      ID: STM2
-      API_KEY: '${STM}'
-      # HIGH (3gb) > MEDIUM (1.5gb) > LOW (300mb)
-      MEMORY_CONSUMPTION: LOW
-      POSTGRES_SERVER_ADRESSE_2: ${POSTGRES_SERVER_ADRESSE}
-      POSTGRES_USER_2: ${POSTGRES_USER}
-      POSTGRES_PASSWORD_2: ${POSTGRES_PASSWORD}
-      POSTGRES_DB_2: ${POSTGRES_DB}
-      DB_PORT_2: ${DB_PORT}
-      IS_LEADER_2: "false"
-    ports:
-      - '32790:8080'
-    labels:
-      Replicas : STM2
-      ARTIFACT_CATEGORY: Computation
-      Pod_Links : SideCard2
-      DNS : Public
   
   stm_basededonnee:
     image: postgres:latest
